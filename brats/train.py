@@ -16,7 +16,7 @@ config["image_shape"] = (144, 144, 144)  # This determines what shape the images
 # edit
 config["patch_shape"] = (64, 64, 64)  # switch to None to train on the whole image
 # edit
-config["labels"] = (1, 2, 4)  # the label numbers on the input image
+config["labels"] = (1, 2, 3, 4)  # the label numbers on the input image
 config["n_labels"] = len(config["labels"])
 config["all_modalities"] = ["t1", "t1ce", "flair", "t2"]
 # edit to train for only flair
@@ -59,7 +59,7 @@ config["overwrite"] = False  # If True, will previous files. If False, will use 
 
 def fetch_training_data_files():
     training_data_files = list()
-    for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "preprocessed", "*", "*")):
+    for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "BRATS2018_preprocessed", "*", "*")):
         subject_files = list()
         for modality in config["training_modalities"] + ["truth"]:
             subject_files.append(os.path.join(subject_dir, modality + ".nii.gz"))
