@@ -165,16 +165,16 @@ def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap
         index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape, patch_overlap,
                                              patch_start_offset)
         count = 0
+        
         for index in index_list:
             x_list = list()
             y_list = list()
             add_data(x_list, y_list, data_file, index, skip_blank=skip_blank, patch_shape=patch_shape)
             if len(x_list) > 0:
                 count += 1
-        print('count: {}'.format(count))
         return count
     else:
-        print('len(index_list): {}'.format(len(index_list)))
+        
         return len(index_list)
 
 
