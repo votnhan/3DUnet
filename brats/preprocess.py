@@ -12,7 +12,7 @@ import SimpleITK as sitk
 import numpy as np
 from nipype.interfaces.ants import N4BiasFieldCorrection
 
-from brats.train import config
+from .train import config
 
 
 def append_basename(in_file, append):
