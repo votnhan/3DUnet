@@ -2,6 +2,8 @@
 Tools for converting, normalizing, and fixing the brats data.
 """
 
+import sys
+sys.path.append('/bin/bash/')
 
 import glob
 import os
@@ -11,6 +13,7 @@ import shutil
 import SimpleITK as sitk
 import numpy as np
 from nipype.interfaces.ants import N4BiasFieldCorrection
+
 
 from brats.train import config
 
