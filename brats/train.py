@@ -33,11 +33,11 @@ config["batch_size"] = 6
 # edit
 config["validation_batch_size"] = 12
 # edit
-config["n_epochs"] = 500  # cutoff the training after this many epochs
+config["n_epochs"] = 60  # cutoff the training after this many epochs
 # edit
 config["patience"] = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
 # edit
-config["early_stop"] = 50  # training will be stopped after this many epochs without the validation loss improving
+config["early_stop"] = 15  # training will be stopped after this many epochs without the validation loss improving
 # edit, it is quite small
 config["initial_learning_rate"] = 0.00001
 config["learning_rate_drop"] = 0.5  # factor by which the learning rate will be reduced
