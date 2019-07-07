@@ -14,7 +14,7 @@ config["pool_size"] = (2, 2, 2)  # pool size for the max pooling operations
 # edit
 config["image_shape"] = (144, 144, 144)  # This determines what shape the images will be cropped/resampled to.
 # edit
-config["patch_shape"] = (64, 64, 64)  # switch to None to train on the whole image
+config["patch_shape"] = (32, 32, 32)  # switch to None to train on the whole image
 # edit
 config["labels"] = (0, 1, 2, 3, 4)  # the label numbers on the input image
 config["n_labels"] = len(config["labels"])
