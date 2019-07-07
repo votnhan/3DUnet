@@ -16,7 +16,7 @@ config["image_shape"] = (144, 144, 144)  # This determines what shape the images
 # edit
 config["patch_shape"] = (64, 64, 64)  # switch to None to train on the whole image
 # edit
-config["labels"] = (0, 1, 2, 3, 4)  # the label numbers on the input image
+config["labels"] = (0, 1, 2, 4)  # the label numbers on the input image
 config["n_labels"] = len(config["labels"])
 config["all_modalities"] = ["t1", "t1ce", "flair", "t2"]
 # edit to train for only flair
