@@ -117,7 +117,10 @@ def main(overwrite=False):
                 learning_rate_patience=config["patience"],
                 early_stopping_patience=config["early_stop"],
                 n_epochs=config["n_epochs"])
+
+    print('End training !')
     data_file_opened.close()
+
 
 
 if __name__ == "__main__":
