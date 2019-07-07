@@ -86,6 +86,9 @@ def main(overwrite=False):
                               deconvolution=config["deconvolution"])
 
     # get training and testing generators
+
+    print('Get training and testing generators')
+
     train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
         data_file_opened,
         batch_size=config["batch_size"],
@@ -106,6 +109,9 @@ def main(overwrite=False):
         augment_distortion_factor=config["distort"])
 
     # run training
+
+    print('Run training')
+
     train_model(model=model,
                 model_file=config["model_file"],
                 training_generator=train_generator,
