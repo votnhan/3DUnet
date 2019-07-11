@@ -9,7 +9,6 @@ from unet3d.metrics import (dice_coefficient, dice_coefficient_loss, dice_coef, 
                             weighted_dice_coefficient_loss, weighted_dice_coefficient)
 
 from unet3d.model import isensee2017_model
-from brats.train_isensee2017 import config
 
 K.set_image_dim_ordering('th')
 
@@ -57,7 +56,7 @@ def load_old_model(model_file):
             raise error
 
 
-def load_old_model_with_weights(model_file):
+def load_old_model_with_weights(model_file, config):
     model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
                                   initial_learning_rate=config["initial_learning_rate"],
                                   n_base_filters=config["n_base_filters"])

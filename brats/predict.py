@@ -1,6 +1,6 @@
 import os
 
-from train import config
+from brats.train_isensee2017 import config
 from unet3d.prediction import run_validation_cases
 
 
@@ -12,7 +12,7 @@ def main():
                          labels=config["labels"],
                          hdf5_file=config["data_file"],
                          output_label_map=True,
-                         output_dir=prediction_dir, is_weight=True)
+                         output_dir=prediction_dir, is_weight=True, config=config)
 
 
 if __name__ == "__main__":
