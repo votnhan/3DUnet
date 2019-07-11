@@ -8,6 +8,9 @@ from keras.models import load_model
 from unet3d.metrics import (dice_coefficient, dice_coefficient_loss, dice_coef, dice_coef_loss,
                             weighted_dice_coefficient_loss, weighted_dice_coefficient)
 
+from unet3d.model import isensee2017_model
+from brats.train_isensee2017 import config
+
 K.set_image_dim_ordering('th')
 
 
@@ -54,6 +57,15 @@ def load_old_model(model_file):
             raise error
 
 
+def load_old_model_with_weights(model_file):
+    model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
+                                  initial_learning_rate=config["initial_learning_rate"],
+                                  n_base_filters=config["n_base_filters"])
+
+    model.load_weights(model_file)
+    return model
+
+
 def train_model(model, model_file, training_generator, validation_generator, steps_per_epoch, validation_steps,
                 initial_learning_rate=0.001, learning_rate_drop=0.5, learning_rate_epochs=None, n_epochs=500,
                 learning_rate_patience=20, early_stopping_patience=None):
@@ -88,3 +100,5 @@ def train_model(model, model_file, training_generator, validation_generator, ste
                                                 learning_rate_epochs=learning_rate_epochs,
                                                 learning_rate_patience=learning_rate_patience,
                                                 early_stopping_patience=early_stopping_patience))
+
+    

@@ -4,7 +4,7 @@ import nibabel as nib
 import numpy as np
 import tables
 
-from .training import load_old_model
+from .training import load_old_model, load_old_model_with_weights
 from .utils import pickle_load
 from .utils.patches import reconstruct_from_patches, get_patch_from_3d_data, compute_patch_indices
 from .augment import permute_data, generate_permutation_keys, reverse_permute_data
@@ -141,9 +141,14 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
 
 
 def run_validation_cases(validation_keys_file, model_file, training_modalities, labels, hdf5_file,
-                         output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):
+                         output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False, is_weight=False):
     validation_indices = pickle_load(validation_keys_file)
-    model = load_old_model(model_file)
+    model = None
+    if not is_weight:
+        model = load_old_model(model_file)
+    else:
+        model = load_old_model_with_weights(model_file)
+
     data_file = tables.open_file(hdf5_file, "r")
     for index in validation_indices:
         if 'subject_ids' in data_file.root:
