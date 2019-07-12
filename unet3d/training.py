@@ -8,7 +8,7 @@ from keras.models import load_model
 from unet3d.metrics import (dice_coefficient, dice_coefficient_loss, dice_coef, dice_coef_loss,
                             weighted_dice_coefficient_loss, weighted_dice_coefficient)
 
-from unet3d.model import unet_model_3d
+from unet3d.model import unet_model_3d, isensee2017_model
 
 K.set_image_dim_ordering('th')
 
@@ -57,9 +57,9 @@ def load_old_model(model_file):
 
 
 def load_old_model_with_weights(model_file, config):
-    model = unet_model_3d(input_shape=config["input_shape"], n_labels=config["n_labels"],
-                                  initial_learning_rate=config["initial_learning_rate"],
-                                  n_base_filters=config["n_base_filters"])
+    model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
+                                initial_learning_rate=config["initial_learning_rate"],
+                                n_base_filters=config["n_base_filters"])
 
     # model = unet_model_3d(input_shape=config["input_shape"],
     #                     pool_size=config["pool_size"],
