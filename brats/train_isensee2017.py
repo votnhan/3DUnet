@@ -44,7 +44,7 @@ config["skip_blank"] = True  # if True, then patches without any target will be 
 
 config["data_file"] = os.path.abspath("brats_data.h5")
 config["model_file"] = os.path.abspath("isensee_2017_model.h5")
-config["weigths_file"] = os.path.abspath("tumor_segmentation_weights.h5")
+config["weigths_file"] = os.path.abspath("isensee_2017_weights.h5")
 config["training_file"] = os.path.abspath("isensee_training_ids.pkl")
 config["validation_file"] = os.path.abspath("isensee_validation_ids.pkl")
 config["overwrite"] = False  # If True, will previous files. If False, will use previously written files.
