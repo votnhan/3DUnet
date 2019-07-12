@@ -3,7 +3,7 @@ import sys
 
 sys.path.append('../')
 
-from brats.train import config
+from brats.train_isensee2017 import config
 from unet3d.prediction import run_validation_cases
 
 

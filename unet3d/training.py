@@ -57,15 +57,15 @@ def load_old_model(model_file):
 
 
 def load_old_model_with_weights(model_file, config):
-    # model = unet_model_3d(input_shape=config["input_shape"], n_labels=config["n_labels"],
-    #                               initial_learning_rate=config["initial_learning_rate"],
-    #                               n_base_filters=config["n_base_filters"])
+    model = unet_model_3d(input_shape=config["input_shape"], n_labels=config["n_labels"],
+                                  initial_learning_rate=config["initial_learning_rate"],
+                                  n_base_filters=config["n_base_filters"])
 
-    model = unet_model_3d(input_shape=config["input_shape"],
-                        pool_size=config["pool_size"],
-                        n_labels=config["n_labels"],
-                        initial_learning_rate=config["initial_learning_rate"],
-                        deconvolution=config["deconvolution"])
+    # model = unet_model_3d(input_shape=config["input_shape"],
+    #                     pool_size=config["pool_size"],
+    #                     n_labels=config["n_labels"],
+    #                     initial_learning_rate=config["initial_learning_rate"],
+    #                     deconvolution=config["deconvolution"])
 
     model.load_weights(model_file)
     return model
