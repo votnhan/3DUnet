@@ -42,7 +42,7 @@ config["validation_patch_overlap"] = 0  # if > 0, during training, validation pa
 config["training_patch_start_offset"] = (16, 16, 16)  # randomly offset the first patch index by up to this offset
 config["skip_blank"] = True  # if True, then patches without any target will be skipped
 
-config["data_file"] = os.path.abspath("brats_data.h5")
+config["data_file"] = os.path.abspath("brats_data_isensee_2017.h5")
 config["model_file"] = os.path.abspath("isensee_2017_model.h5")
 config["weigths_file"] = os.path.abspath("isensee_2017_weights.h5")
 config["training_file"] = os.path.abspath("isensee_training_ids.pkl")
