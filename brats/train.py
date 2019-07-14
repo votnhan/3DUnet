@@ -14,7 +14,7 @@ config["pool_size"] = (2, 2, 2)  # pool size for the max pooling operations
 # edit
 config["image_shape"] = (144, 144, 144)  # This determines what shape the images will be cropped/resampled to.
 # edit
-config["patch_shape"] = (64, 64, 64)  # switch to None to train on the whole image
+config["patch_shape"] = None  # switch to None to train on the whole image
 # edit
 config["labels"] = (0, 1, 2, 4)  # the label numbers on the input image
 config["n_labels"] = len(config["labels"])
@@ -29,17 +29,17 @@ else:
 config["truth_channel"] = config["nb_channels"]
 config["deconvolution"] = True  # if False, will use upsampling instead of deconvolution
 # edit
-config["batch_size"] = 6
+config["batch_size"] = 1
 # edit
-config["validation_batch_size"] = 12
+config["validation_batch_size"] = 2
 # edit
-config["n_epochs"] = 60  # cutoff the training after this many epochs
+config["n_epochs"] = 500  # cutoff the training after this many epochs
 # edit
 config["patience"] = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
 # edit
-config["early_stop"] = 15  # training will be stopped after this many epochs without the validation loss improving
+config["early_stop"] = 50  # training will be stopped after this many epochs without the validation loss improving
 # edit, it is quite small
-config["initial_learning_rate"] = 0.00001
+config["initial_learning_rate"] = 0.0001
 config["learning_rate_drop"] = 0.5  # factor by which the learning rate will be reduced
 config["validation_split"] = 0.8  # portion of the data that will be used for training
 config["flip"] = False  # augments the data by randomly flipping an axis during

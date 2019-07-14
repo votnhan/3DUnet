@@ -50,8 +50,8 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
 
         context_output_layer = create_context_module(in_conv, n_level_filters, dropout_rate=dropout_rate)
 
-        #summation_layer = Add()([in_conv, context_output_layer])
-        summation_layer = Concatenate(axis=3)([in_conv, context_output_layer])
+        summation_layer = Add()([in_conv, context_output_layer])
+        #summation_layer = Concatenate()([in_conv, context_output_layer])
 
         level_output_layers.append(summation_layer)
         current_layer = summation_layer
@@ -71,8 +71,8 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
         if output_layer is None:
             output_layer = segmentation_layer
         else:
-            #output_layer = Add()([output_layer, segmentation_layer])
-            output_layer = Concatenate(axis=3)([output_layer, segmentation_layer])
+            output_layer = Add()([output_layer, segmentation_layer])
+            #output_layer = Concatenate()([output_layer, segmentation_layer])
 
         if level_number > 0:
             output_layer = UpSampling3D(size=(2, 2, 2))(output_layer)
