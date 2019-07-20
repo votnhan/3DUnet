@@ -4,6 +4,8 @@ import glob
 import sys
 sys.path.append('../')
 
+from keras.optimizers import SGD
+
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators
 from unet3d.model import isensee2017_model
@@ -80,7 +82,7 @@ def main(overwrite=False):
         # instantiate new model
         model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
                                   initial_learning_rate=config["initial_learning_rate"],
-                                  n_base_filters=config["n_base_filters"])
+                                  n_base_filters=config["n_base_filters"], optimizer=SGD)
 
     # get training and testing generators
     train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(

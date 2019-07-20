@@ -2,7 +2,7 @@ from functools import partial
 
 from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate
 from keras.engine import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 
 from .unet import create_convolution_block, concatenate
 from ..metrics import weighted_dice_coefficient_loss
@@ -80,7 +80,11 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
     activation_block = Activation(activation_name)(output_layer)
 
     model = Model(inputs=inputs, outputs=activation_block)
-    model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function)
+    if optimizer is Adam:
+        model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function)
+    elif optimizer is SGD:
+        model.compile(optimizer=SGD(lr=initial_learning_rate, momentum=0.9, decay=1e-6, nesterov=True), loss=loss_function)
+
     return model
 
 
