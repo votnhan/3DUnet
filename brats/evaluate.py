@@ -1,5 +1,5 @@
 import numpy as np
-import nibabel as nib
+#import nibabel as nib
 import os
 import glob
 import pandas as pd
@@ -54,9 +54,11 @@ def main():
     plt.savefig("validation_scores_boxplot.png")
     plt.close()
 
-    if os.path.exists("./training.log"):
-        training_df = pd.read_csv("./training.log").set_index('epoch')
+    visualize_training_process('./training.log')
 
+def visualize_training_process(logfile):
+    if os.path.exists(logfile):
+        training_df = pd.read_csv(logfile).set_index('epoch')
         plt.plot(training_df['loss'].values, label='training loss')
         plt.plot(training_df['val_loss'].values, label='validation loss')
         plt.ylabel('Loss')
@@ -64,7 +66,10 @@ def main():
         plt.xlim((0, len(training_df.index)))
         plt.legend(loc='upper right')
         plt.savefig('loss_graph.png')
+        return 'Done'
 
+    return 'Log File Not Found'
 
 if __name__ == "__main__":
-    main()
+    #main()
+    visualize_training_process('./training.log')
