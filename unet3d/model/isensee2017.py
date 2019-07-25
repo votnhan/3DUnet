@@ -1,6 +1,6 @@
 from functools import partial
 
-from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate
+from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate, Softmax
 from keras.engine import Model
 from keras.optimizers import Adam, SGD
 
@@ -82,7 +82,7 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
     if activation_name == 'sigmoid':
         activation_block = Activation(activation_name)(output_layer)
     elif activation_name == 'softmax':
-        activation_block = Activation(activation_name, axis=0)(output_layer)
+        activation_block = Softmax(axis=0)(output_layer)
 
     model = Model(inputs=inputs, outputs=activation_block)
     if optimizer is Adam:
