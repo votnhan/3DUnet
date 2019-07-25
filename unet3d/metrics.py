@@ -24,10 +24,13 @@ def weighted_dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=0.00001)
     :param axis:
     :return:
     """
-    return K.mean(2. * (K.sum(y_true * y_pred,
+    dice_score_each_class = 2. * (K.sum(y_true * y_pred,
                               axis=axis) + smooth/2)/(K.sum(y_true,
                                                             axis=axis) + K.sum(y_pred,
-                                                                               axis=axis) + smooth))
+                                                                               axis=axis) + smooth)
+    weights = K.constant([0.05, 0.325, 0.375, 0.25])
+    loss = dice_score_each_class * weights
+    return K.sum(loss)
 
 
 def weighted_dice_coefficient_loss(y_true, y_pred):

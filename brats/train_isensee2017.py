@@ -82,7 +82,7 @@ def main(overwrite=False):
         # instantiate new model
         model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
                                   initial_learning_rate=config["initial_learning_rate"],
-                                  n_base_filters=config["n_base_filters"], optimizer=SGD)
+                                  n_base_filters=config["n_base_filters"], activation_name='softmax')
 
     # get training and testing generators
     train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
