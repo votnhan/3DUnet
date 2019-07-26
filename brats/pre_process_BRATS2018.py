@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+sys.path.append('./')
 
 from brats.preprocess import convert_brats_data
 
