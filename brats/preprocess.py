@@ -155,7 +155,6 @@ def convert_brats_data(brats_folder, out_folder, overwrite=False, no_bias_correc
     or tuple.
     :return:
     """
-    a
     print('1')
     for subject_folder in glob.glob(os.path.join(brats_folder, "*", "*")):
         print('2')
@@ -168,3 +167,5 @@ def convert_brats_data(brats_folder, out_folder, overwrite=False, no_bias_correc
                     os.makedirs(new_subject_folder)
                 convert_brats_folder(subject_folder, new_subject_folder,
                                      no_bias_correction_modalities=no_bias_correction_modalities)
+
+
