@@ -155,7 +155,9 @@ def convert_brats_data(brats_folder, out_folder, overwrite=False, no_bias_correc
     or tuple.
     :return:
     """
+    print('1')
     for subject_folder in glob.glob(os.path.join(brats_folder, "*", "*")):
+        print('2')
         if os.path.isdir(subject_folder):
             subject = os.path.basename(subject_folder)
             new_subject_folder = os.path.join(out_folder, os.path.basename(os.path.dirname(subject_folder)),
