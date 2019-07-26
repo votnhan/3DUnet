@@ -71,5 +71,5 @@ def visualize_training_process(logfile):
     return 'Log File Not Found'
 
 if __name__ == "__main__":
-    #main()
-    visualize_training_process('./training.log')
+    main()
+    #visualize_training_process('./training.log')
