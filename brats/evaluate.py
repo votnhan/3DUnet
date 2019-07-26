@@ -1,5 +1,5 @@
 import numpy as np
-#import nibabel as nib
+import nibabel as nib
 import os
 import glob
 import pandas as pd
