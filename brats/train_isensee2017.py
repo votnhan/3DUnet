@@ -44,9 +44,9 @@ config["validation_patch_overlap"] = 0  # if > 0, during training, validation pa
 config["training_patch_start_offset"] = (16, 16, 16)  # randomly offset the first patch index by up to this offset
 config["skip_blank"] = False  # if True, then patches without any target will be skipped
 
-config["data_file"] = os.path.abspath("brats_data_isensee_2017.h5")
-config["model_file"] = os.path.abspath("isensee_2017_model.h5")
-config["weigths_file"] = os.path.abspath("isensee_2017_weights.h5")
+config["data_file"] = os.path.abspath("brats_data_isensee_2018.h5")
+config["model_file"] = os.path.abspath("isensee_2018_model.h5")
+config["weigths_file"] = os.path.abspath("isensee_2018_weights.h5")
 config["training_file"] = os.path.abspath("isensee_training_ids.pkl")
 config["validation_file"] = os.path.abspath("isensee_validation_ids.pkl")
 config["overwrite"] = False  # If True, will previous files. If False, will use previously written files.
@@ -55,7 +55,7 @@ config["overwrite"] = False  # If True, will previous files. If False, will use 
 def fetch_training_data_files(return_subject_ids=False):
     training_data_files = list()
     subject_ids = list()
-    for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "BRATS2018_preprocessed", "Train", "*", "*")):
+    for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "BRATS2018_preprocessed_main", "Train", "*", "*")):
         subject_ids.append(os.path.basename(subject_dir))
         subject_files = list()
         for modality in config["training_modalities"] + ["truth"]:
