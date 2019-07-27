@@ -29,9 +29,10 @@ def weighted_dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=0.00001)
                                                             axis=axis) + K.sum(y_pred,
                                                                                axis=axis) + smooth)
     # weights = K.constant([0.05, 0.325, 0.375, 0.25])
-    weights = K.constant([0.25, 0.25, 0.25, 0.25])
-    loss = dice_score_each_class * weights
-    return K.sum(loss)
+    # weights = K.constant([0.25, 0.25, 0.25, 0.25])
+    # weights = K.constant([1./3, 1./3, 1./3])
+    # loss = dice_score_each_class * weights
+    return K.mean(dice_score_each_class)
 
 
 def weighted_dice_coefficient_loss(y_true, y_pred):
