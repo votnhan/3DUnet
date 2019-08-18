@@ -35,7 +35,7 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
     return callbacks
 
 
-def load_old_model(model_file):
+def load_old_model(model_file, config=None):
     print("Loading pre-trained model")
     custom_objects = {'dice_coefficient_loss': dice_coefficient_loss, 'dice_coefficient': dice_coefficient,
                       'dice_coef': dice_coef, 'dice_coef_loss': dice_coef_loss,
@@ -47,7 +47,11 @@ def load_old_model(model_file):
     except ImportError:
         pass
     try:
-        return load_model(model_file, custom_objects=custom_objects)
+        model = load_model(model_file, custom_objects=custom_objects)
+        if config:
+            optimizer = config["optimizer"]
+            model.compile(optimizer=optimizer(lr=config["initial_learning_rate"], momentum=0.9, decay=1e-6, nesterov=True), loss=weighted_dice_coefficient_loss)
+
     except ValueError as error:
         if 'InstanceNormalization' in str(error):
             raise ValueError(str(error) + "\n\nPlease install keras-contrib to use InstanceNormalization:\n"

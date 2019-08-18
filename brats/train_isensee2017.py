@@ -34,6 +34,7 @@ config["n_epochs"] = 500  # cutoff the training after this many epochs
 config["patience"] = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
 config["early_stop"] = 50  # training will be stopped after this many epochs without the validation loss improving
 config["initial_learning_rate"] = 5e-4
+config["optimizer"] = SGD
 config["learning_rate_drop"] = 0.5  # factor by which the learning rate will be reduced
 config["validation_split"] = 0.8  # portion of the data that will be used for training
 config["flip"] = False  # augments the data by randomly flipping an axis during
@@ -77,7 +78,7 @@ def main(overwrite=False):
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):
-        model = load_old_model(config["model_file"])
+        model = load_old_model(config["model_file"], config)
     else:
         # instantiate new model
         model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
