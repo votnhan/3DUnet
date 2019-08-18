@@ -51,6 +51,7 @@ def load_old_model(model_file, config=None):
         if config:
             optimizer = config["optimizer"]
             model.compile(optimizer=optimizer(lr=config["initial_learning_rate"], momentum=0.9, decay=1e-6, nesterov=True), loss=weighted_dice_coefficient_loss)
+        return model
 
     except ValueError as error:
         if 'InstanceNormalization' in str(error):
