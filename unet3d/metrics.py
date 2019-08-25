@@ -1,6 +1,7 @@
 from functools import partial
 
 from keras import backend as K
+from keras import losses
 
 
 def dice_coefficient(y_true, y_pred, smooth=1.):
@@ -36,7 +37,11 @@ def weighted_dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=0.00001)
 
 
 def weighted_dice_coefficient_loss(y_true, y_pred):
-    return -weighted_dice_coefficient(y_true, y_pred)
+    return 1 - weighted_dice_coefficient(y_true, y_pred)
+
+
+def dice_and_entropy_combination_loss(y_true, y_pred):
+    return .5*weighted_dice_coefficient_loss(y_true, y_pred) + .5*losses.categorical_crossentropy(y_true, y_pred)
 
 
 def label_wise_dice_coefficient(y_true, y_pred, label_index):
