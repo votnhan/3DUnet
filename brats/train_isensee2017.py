@@ -4,7 +4,7 @@ import glob
 import sys
 sys.path.append('../')
 
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators
@@ -35,7 +35,7 @@ config["n_epochs"] = 500  # cutoff the training after this many epochs
 config["patience"] = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
 config["early_stop"] = 30  # training will be stopped after this many epochs without the validation loss improving
 config["initial_learning_rate"] = 5e-4
-config["optimizer"] = SGD
+config["optimizer"] = Adam
 config["learning_rate_drop"] = 0.5  # factor by which the learning rate will be reduced
 config["validation_split"] = 0.8  # portion of the data that will be used for training
 config["flip"] = False  # augments the data by randomly flipping an axis during

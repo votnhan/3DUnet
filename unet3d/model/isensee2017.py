@@ -86,9 +86,10 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
 
     model = Model(inputs=inputs, outputs=activation_block)
     if optimizer is Adam:
-        model.compile(optimizer=Adam(lr=initial_learning_rate), loss=loss_function)
+        model.compile(optimizer=Adam(lr=initial_learning_rate), loss=loss_function, metrics=[weighted_dice_coefficient_loss])
     elif optimizer is SGD:
-        model.compile(optimizer=SGD(lr=initial_learning_rate, momentum=0.9, decay=1e-6, nesterov=True), loss=loss_function)
+        model.compile(optimizer=SGD(lr=initial_learning_rate, momentum=0.9, decay=1e-6, nesterov=True), loss=loss_function,
+        metrics=[weighted_dice_coefficient_loss])
 
     return model
 

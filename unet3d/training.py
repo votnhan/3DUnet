@@ -2,11 +2,12 @@ import math
 from functools import partial
 
 from keras import backend as K
+from keras.optimizers import SGD, Adam
 from keras.callbacks import ModelCheckpoint, CSVLogger, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
 from keras.models import load_model
 
 from unet3d.metrics import (dice_coefficient, dice_coefficient_loss, dice_coef, dice_coef_loss,
-                            weighted_dice_coefficient_loss, weighted_dice_coefficient)
+                            weighted_dice_coefficient_loss, weighted_dice_coefficient, dice_and_entropy_combination_loss)
 
 from unet3d.model import unet_model_3d, isensee2017_model
 
@@ -50,7 +51,13 @@ def load_old_model(model_file, config=None):
         model = load_model(model_file, custom_objects=custom_objects)
         if config:
             optimizer = config["optimizer"]
-            model.compile(optimizer=optimizer(lr=config["initial_learning_rate"], momentum=0.9, decay=1e-6, nesterov=True), loss=weighted_dice_coefficient_loss)
+            if optimizer is SGD:
+                model.compile(optimizer=optimizer(lr=config["initial_learning_rate"], momentum=0.9, decay=1e-6, nesterov=True), 
+                loss=dice_and_entropy_combination_loss, metrics=[weighted_dice_coefficient_loss])
+            else:
+                model.compile(optimizer=optimizer(lr=config["initial_learning_rate"]), loss=dice_and_entropy_combination_loss, 
+                metrics=[weighted_dice_coefficient_loss])
+
         return model
 
     except ValueError as error:
