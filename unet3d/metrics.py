@@ -41,7 +41,7 @@ def weighted_dice_coefficient_loss(y_true, y_pred):
 
 
 def dice_and_entropy_combination_loss(y_true, y_pred):
-    return .5*weighted_dice_coefficient_loss(y_true, y_pred) + .5*losses.categorical_crossentropy(y_true, y_pred)
+    return .99*weighted_dice_coefficient_loss(y_true, y_pred) + .01*losses.categorical_crossentropy(y_true, y_pred)
 
 
 def label_wise_dice_coefficient(y_true, y_pred, label_index):
