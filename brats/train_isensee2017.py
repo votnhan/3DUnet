@@ -60,7 +60,7 @@ def fetch_training_data_files(return_subject_ids=False):
     for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "BRATS2018_main", "Train", "*", "*")):
         subject_ids.append(os.path.basename(subject_dir))
         subject_files = list()
-        for modality in config["training_modalities"] + ["truth"]:
+        for modality in config["training_modalities"] + ["seg"]:
             #subject_files.append(os.path.join(subject_dir, modality + ".nii.gz"))
             subject_dir_name = os.path.split(subject_dir)[-1]
             subject_files.append(os.path.join(subject_dir, subject_dir_name + '_' + modality + ".nii.gz"))
