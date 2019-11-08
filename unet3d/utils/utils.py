@@ -49,7 +49,7 @@ def read_image_files(image_files, image_shape=None, crop=None, label_indices=Non
 
     return image_list
 
-
+# Doc hinh xong crop va resize.
 def read_image(in_file, image_shape=None, interpolation='linear', crop=None):
     print("Reading: {0}".format(in_file))
     image = nib.load(os.path.abspath(in_file))

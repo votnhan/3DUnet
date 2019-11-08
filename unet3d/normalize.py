@@ -22,7 +22,7 @@ def get_cropping_parameters(in_files):
         foreground = get_foreground_from_set_of_files(in_files[0], return_image=True)
     return crop_img(foreground, return_slices=True, copy=True)
 
-
+# crop luc nay la True !
 def reslice_image_set(in_files, image_shape, out_files=None, label_indices=None, crop=False):
     if crop:
         crop_slices = get_cropping_parameters([in_files])
@@ -50,7 +50,9 @@ def get_complete_foreground(training_data_files):
 
 def get_foreground_from_set_of_files(set_of_files, background_value=0, tolerance=0.00001, return_image=False):
     for i, image_file in enumerate(set_of_files):
+        # "read_image" luc nay chi doc nguyen hinh, ko thuc hien xu ly gi ca ! 
         image = read_image(image_file)
+        # La foreground khi gia tri khac 0.
         is_foreground = np.logical_or(image.get_data() < (background_value - tolerance),
                                       image.get_data() > (background_value + tolerance))
         if i == 0:

@@ -1,3 +1,4 @@
+original_dimension/
 *.nii.gz
 *.nii
 .idea
@@ -20,3 +21,4 @@ brats/data
 env/
 .env
 .vscode/
+note/
