@@ -1,5 +1,5 @@
 # 3D U-Net Convolution Neural Network with Keras
-![Tumor Segmentation Example](doc/t2.nii.gz_combine_pred.gif)
+![Tumor Segmentation Example](doc/t2.nii.gz_combine_pred.gif)<br />
 Left: grouth truth, right: prediction 
 ## Tutorial using BRATS Data
 ### Training
