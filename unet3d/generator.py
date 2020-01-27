@@ -12,8 +12,7 @@ from .augment import augment_data, random_permutation_x_y
 
 def get_training_and_validation_generators(data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
                                            data_split=0.8, overwrite=False, labels=None, augment=False,
-                                           augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
-                                           validation_patch_overlap=0, training_patch_start_offset=None,
+                                           augment_flip=True, augment_distortion_factor=0.25,
                                            validation_batch_size=None, skip_blank=True, permute=False):
     """
     Creates the training and validation generators that can be used when training the model.
@@ -63,30 +62,19 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
                                         augment=augment,
                                         augment_flip=augment_flip,
                                         augment_distortion_factor=augment_distortion_factor,
-                                        patch_shape=patch_shape,
-                                        patch_overlap=0,
-                                        patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
                                         permute=permute)
     validation_generator = data_generator(data_file, validation_list,
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
                                           labels=labels,
-                                          patch_shape=patch_shape,
-                                          patch_overlap=validation_patch_overlap,
                                           skip_blank=skip_blank)
 
     # Set the number of training and testing samples per epoch correctly
-    num_training_steps = get_number_of_steps(get_number_of_patches(data_file, training_list, patch_shape,
-                                                                   skip_blank=skip_blank,
-                                                                   patch_start_offset=training_patch_start_offset,
-                                                                   patch_overlap=0), batch_size)
+    num_training_steps = get_number_of_steps(len(training_list), batch_size)
     print("Number of training steps: ", num_training_steps)
 
-    num_validation_steps = get_number_of_steps(get_number_of_patches(data_file, validation_list, patch_shape,
-                                                                     skip_blank=skip_blank,
-                                                                     patch_overlap=validation_patch_overlap),
-                                               validation_batch_size)
+    num_validation_steps = get_number_of_steps(len(validation_list), validation_batch_size)
     print("Number of validation steps: ", num_validation_steps)
 
     return training_generator, validation_generator, num_training_steps, num_validation_steps
@@ -105,11 +93,11 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
     """
     Splits the data into the training and validation indices list.
     :param data_file: pytables hdf5 data file
-    :param training_file:
-    :param validation_file:
-    :param data_split:
-    :param overwrite:
-    :return:
+    :param training_file: file stores index of sample for training in data_file
+    :param validation_file:file stores index of sample for validation in data_file
+    :param data_split: ratio train-val
+    :param overwrite: whether overwrite old file or not
+    :return: list of index for training and validation
     """
     if overwrite or not os.path.exists(training_file):
         print("Creating validation split...")
@@ -123,7 +111,7 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
         print("Loading previous validation split...")
         return pickle_load(training_file), pickle_load(validation_file)
 
-
+# create two list index of sample for training and validation
 def split_list(input_list, split=0.8, shuffle_list=True):
     if shuffle_list:
         shuffle(input_list)
@@ -134,64 +122,27 @@ def split_list(input_list, split=0.8, shuffle_list=True):
 
 
 def data_generator(data_file, index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
-                   augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                   shuffle_index_list=True, skip_blank=True, permute=False):
+                   augment_distortion_factor=0.25, shuffle_index_list=True, skip_blank=True, permute=False):
     orig_index_list = index_list
     while True:
         x_list = list()
         y_list = list()
-        if patch_shape:
-            index_list = create_patch_index_list(orig_index_list, data_file.root.data.shape[-3:], patch_shape,
-                                                 patch_overlap, patch_start_offset)
-        else:
-            index_list = copy.copy(orig_index_list)
+        index_list = copy.copy(orig_index_list)
 
         if shuffle_index_list:
             shuffle(index_list)
         while len(index_list) > 0:
             index = index_list.pop()
             add_data(x_list, y_list, data_file, index, augment=augment, augment_flip=augment_flip,
-                     augment_distortion_factor=augment_distortion_factor, patch_shape=patch_shape,
-                     skip_blank=skip_blank, permute=permute)
+                     augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank, 
+                     permute=permute)
             if len(x_list) == batch_size or (len(index_list) == 0 and len(x_list) > 0):
                 yield convert_data(x_list, y_list, n_labels=n_labels, labels=labels)
                 x_list = list()
                 y_list = list()
 
 
-def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                          skip_blank=True):
-    if patch_shape:
-        index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape, patch_overlap,
-                                             patch_start_offset)
-        count = 0
-        
-        for index in index_list:
-            x_list = list()
-            y_list = list()
-            add_data(x_list, y_list, data_file, index, skip_blank=skip_blank, patch_shape=patch_shape)
-            if len(x_list) > 0:
-                count += 1
-        return count
-    else:
-        
-        return len(index_list)
-
-
-def create_patch_index_list(index_list, image_shape, patch_shape, patch_overlap, patch_start_offset=None):
-    patch_index = list()
-    for index in index_list:
-        if patch_start_offset is not None:
-            random_start_offset = np.negative(get_random_nd_index(patch_start_offset))
-            patches = compute_patch_indices(image_shape, patch_shape, overlap=patch_overlap, start=random_start_offset)
-        else:
-            patches = compute_patch_indices(image_shape, patch_shape, overlap=patch_overlap)
-        patch_index.extend(itertools.product([index], patches))
-    return patch_index
-
-
-def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False, augment_distortion_factor=0.25,
-             patch_shape=False, skip_blank=True, permute=False):
+def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False, augment_distortion_factor=0.25, skip_blank=True, permute=False):
     """
     Adds data from the data file to the given lists of feature and target data
     :param skip_blank: Data will not be added if the truth vector is all zeros (default is True).
@@ -209,12 +160,9 @@ def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False
     :param permute: will randomly permute the data (data must be 3D cube)
     :return:
     """
-    data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
+    data, truth = get_data_from_file(data_file, index)
     if augment:
-        if patch_shape is not None:
-            affine = data_file.root.affine[index[0]]
-        else:
-            affine = data_file.root.affine[index]
+        affine = data_file.root.affine[index]
         data, truth = augment_data(data, truth, affine, flip=augment_flip, scale_deviation=augment_distortion_factor)
 
     if permute:

@@ -20,21 +20,17 @@ def get_cropping_parameters(in_files):
         foreground = get_complete_foreground(in_files)
     else:
         foreground = get_foreground_from_set_of_files(in_files[0], return_image=True)
-    return crop_img(foreground, return_slices=True, copy=True)
+    # As return_slices=True, crop_img here is just to get slices parameters, do not get cropped image
+    return crop_img(img=foreground, return_slices=True, copy=True)
 
-# crop luc nay la True !
-def reslice_image_set(in_files, image_shape, out_files=None, label_indices=None, crop=False):
+# crop = True!
+def reslice_image_set(in_files, image_shape, label_indices=None, crop=False):
     if crop:
         crop_slices = get_cropping_parameters([in_files])
     else:
         crop_slices = None
-    images = read_image_files(in_files, image_shape=image_shape, crop=crop_slices, label_indices=label_indices)
-    if out_files:
-        for image, out_file in zip(images, out_files):
-            image.to_filename(out_file)
-        return [os.path.abspath(out_file) for out_file in out_files]
-    else:
-        return images
+    images = read_image_files(image_files=in_files, image_shape=image_shape, crop=crop_slices, label_indices=label_indices)
+    return images
 
 
 def get_complete_foreground(training_data_files):
@@ -49,10 +45,11 @@ def get_complete_foreground(training_data_files):
 
 
 def get_foreground_from_set_of_files(set_of_files, background_value=0, tolerance=0.00001, return_image=False):
+    # loop over modalities
     for i, image_file in enumerate(set_of_files):
-        # "read_image" luc nay chi doc nguyen hinh, ko thuc hien xu ly gi ca ! 
-        image = read_image(image_file)
-        # La foreground khi gia tri khac 0.
+        # read_image read MRI image from path image_file
+        image = read_image(in_file=image_file)
+        # find the voxel has a value other than 0
         is_foreground = np.logical_or(image.get_data() < (background_value - tolerance),
                                       image.get_data() > (background_value + tolerance))
         if i == 0:
@@ -60,7 +57,8 @@ def get_foreground_from_set_of_files(set_of_files, background_value=0, tolerance
 
         foreground[is_foreground] = 1
     if return_image:
-        return new_img_like(image, foreground)
+        # Convert true-false to 1-0
+        return new_img_like(ref_niimg=image, data=foreground)
     else:
         return foreground
 
@@ -76,10 +74,13 @@ def normalize_data_storage(data_storage):
     stds = list()
     for index in range(data_storage.shape[0]):
         data = data_storage[index]
+        # Find means, stds of 4 modality for each sample in training set
         means.append(data.mean(axis=(1, 2, 3)))
         stds.append(data.std(axis=(1, 2, 3)))
+    # Find average means, stds over all training set => mean, std have shape: (1, 4)
     mean = np.asarray(means).mean(axis=0)
     std = np.asarray(stds).mean(axis=0)
+    # Normalize modalities of subject over all training set use calculated means, stds
     for index in range(data_storage.shape[0]):
         data_storage[index] = normalize_data(data_storage[index], mean, std)
     return data_storage

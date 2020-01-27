@@ -5,9 +5,10 @@ import tables
 
 from .normalize import normalize_data_storage, reslice_image_set
 
-# Tao file data la file h5, trong file nay luu cac sample va label, truy xuat bang ".root.data", 
-# ".root.truth", ngoai ra con co ma tran affine, truy xuat bang ".root.affine"
-# ====> Chi tao cau truc luu tru, chua co du lieu gi ca !!
+# Create data file with extension .h5. The sample and label are stored in this file, 
+# retrieved with the fields ".root.data", ".root.truth", 
+# the affine matrix is accessed by "root.affine"
+# Only create storage object, no data at all !!
 def create_data_file(out_file, n_channels, n_samples, image_shape):
     hdf5_file = tables.open_file(out_file, mode='w')
     filters = tables.Filters(complevel=5, complib='blosc')
@@ -24,9 +25,9 @@ def create_data_file(out_file, n_channels, n_samples, image_shape):
 
 def write_image_data_to_file(image_files, data_storage, truth_storage, image_shape, n_channels, affine_storage,
                              truth_dtype=np.uint8, crop=True):
-    # Xet cho 1 subject, "set_of_files" la cac file du lieu cua subject do.
+    # "set_of_files" is a tuple of data files of a subject 
     for set_of_files in image_files:
-        images = reslice_image_set(set_of_files, image_shape, label_indices=len(set_of_files) - 1, crop=crop)
+        images = reslice_image_set(in_files=set_of_files, image_shape=image_shape, label_indices=len(set_of_files) - 1, crop=crop)
         subject_data = [image.get_data() for image in images]
         add_data_to_storage(data_storage, truth_storage, affine_storage, subject_data, images[0].affine, n_channels,
                             truth_dtype)
@@ -65,8 +66,8 @@ def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=n
         os.remove(out_file)
         raise e
 
-    write_image_data_to_file(training_data_files, data_storage, truth_storage, image_shape,
-                             truth_dtype=truth_dtype, n_channels=n_channels, affine_storage=affine_storage, crop=crop)
+    write_image_data_to_file(training_data_files, data_storage, truth_storage, image_shape, truth_dtype=truth_dtype, n_channels=n_channels, 
+                             affine_storage=affine_storage, crop=crop)
     if subject_ids:
         hdf5_file.create_array(hdf5_file.root, 'subject_ids', obj=subject_ids)
     if normalize:

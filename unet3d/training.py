@@ -1,13 +1,13 @@
 import math
+import keras.optimizers as opts
 from functools import partial
 
 from keras import backend as K
-from keras.optimizers import SGD, Adam
 from keras.callbacks import ModelCheckpoint, CSVLogger, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
 from keras.models import load_model
 
-from unet3d.metrics import (dice_coefficient, dice_coefficient_loss, dice_coef, dice_coef_loss,
-                            weighted_dice_coefficient_loss, weighted_dice_coefficient, dice_and_entropy_combination_loss)
+from unet3d.metrics import weighted_dice_coefficient_loss
+import unet3d.metrics as module_metric
 
 from unet3d.model import unet_model_3d, isensee2017_model
 
@@ -38,11 +38,8 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
 
 def load_old_model(model_file, config=None):
     print("Loading pre-trained model")
-    custom_objects = {'dice_coefficient_loss': dice_coefficient_loss, 'dice_coefficient': dice_coefficient,
-                      'dice_coef': dice_coef, 'dice_coef_loss': dice_coef_loss,
-                      'weighted_dice_coefficient': weighted_dice_coefficient,
-                      'weighted_dice_coefficient_loss': weighted_dice_coefficient_loss,
-                      'dice_and_entropy_combination_loss': dice_and_entropy_combination_loss}
+    custom_objects = dict()
+    custom_objects['weighted_dice_coefficient_loss'] = weighted_dice_coefficient_loss
     try:
         from keras_contrib.layers import InstanceNormalization
         custom_objects["InstanceNormalization"] = InstanceNormalization
@@ -51,13 +48,10 @@ def load_old_model(model_file, config=None):
     try:
         model = load_model(model_file, custom_objects=custom_objects)
         if config:
-            optimizer = config["optimizer"]
-            if optimizer is SGD:
-                model.compile(optimizer=optimizer(lr=config["initial_learning_rate"], momentum=0.9, decay=1e-6, nesterov=True), 
-                loss=dice_and_entropy_combination_loss, metrics=[weighted_dice_coefficient_loss])
-            else:
-                model.compile(optimizer=optimizer(lr=config["initial_learning_rate"]), loss=dice_and_entropy_combination_loss, 
-                metrics=[weighted_dice_coefficient_loss])
+            optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
+            loss = getattr(module_metric, config["loss_fc"])
+            metrics = [x for x in getattr(module_metric, config["metrics"])]
+            model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
         return model
 
@@ -67,22 +61,6 @@ def load_old_model(model_file, config=None):
                                           "'pip install git+https://www.github.com/keras-team/keras-contrib.git'")
         else:
             raise error
-
-
-def load_old_model_with_weights(model_file, config):
-    model = isensee2017_model(input_shape=config["input_shape"], n_labels=config["n_labels"],
-                                initial_learning_rate=config["initial_learning_rate"],
-                                n_base_filters=config["n_base_filters"])
-
-    # model = unet_model_3d(input_shape=config["input_shape"],
-    #                     pool_size=config["pool_size"],
-    #                     n_labels=config["n_labels"],
-    #                     initial_learning_rate=config["initial_learning_rate"],
-    #                     deconvolution=config["deconvolution"])
-
-    model.load_weights(model_file)
-    return model
-
 
 def train_model(model, model_file, training_generator, validation_generator, steps_per_epoch, validation_steps,
                 initial_learning_rate=0.001, learning_rate_drop=0.5, learning_rate_epochs=None, n_epochs=500,
@@ -118,5 +96,3 @@ def train_model(model, model_file, training_generator, validation_generator, ste
                                                 learning_rate_epochs=learning_rate_epochs,
                                                 learning_rate_patience=learning_rate_patience,
                                                 early_stopping_patience=early_stopping_patience))
-
-    

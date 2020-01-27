@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import directed_hausdorff
 
 
 def get_whole_tumor_mask(data):
@@ -23,6 +24,29 @@ def get_enhancing_tumor_mask(data):
 def dice_coefficient(truth, prediction):
     return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
 
+# TPR
+
+def get_Sensitivity(truth, prediction):
+  tp = np.sum(truth*prediction)
+  return tp / (np.sum(truth))
+
+# TNR
+def get_Specificity(truth, prediction):
+  n_truth = truth == 0
+  n_prediction = prediction == 0
+  tn = np.sum(n_truth * n_prediction)
+  return tn / np.sum(n_truth)
+
+# Hausdorff distance
+def get_Hd_distance(truth, prediction):
+  coor_truth = np.where(truth==1)
+  coor_truth = np.asarray(coor_truth).T
+  coor_preds = np.where(prediction==1)
+  coor_preds = np.asarray(coor_preds).T
+  d_ab = directed_hausdorff(coor_truth, coor_preds)[0]
+  d_ba = directed_hausdorff(coor_preds, coor_truth)[0]
+  hd_ab = max(d_ab, d_ba)
+  return hd_ab
 
 def main():
     header = ("WholeTumor", "TumorCore", "EnhancingTumor")

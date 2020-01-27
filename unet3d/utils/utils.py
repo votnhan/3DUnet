@@ -26,13 +26,11 @@ def get_affine(in_file):
 
 def read_image_files(image_files, image_shape=None, crop=None, label_indices=None):
     """
-    
-    :param image_files: 
-    :param image_shape: 
-    :param crop: 
-    :param use_nearest_for_last_file: If True, will use nearest neighbor interpolation for the last file. This is used
-    because the last file may be the labels file. Using linear interpolation here would mess up the labels.
-    :return: 
+    :param image_files: list of files MRI image
+    :param image_shape: shape of MRI image
+    :param crop: range of x, y, z for crop
+    :param label_indices: index of label path in image_files
+    :return: list of MRI images
     """
     if label_indices is None:
         label_indices = []
@@ -40,8 +38,7 @@ def read_image_files(image_files, image_shape=None, crop=None, label_indices=Non
         label_indices = [label_indices]
     image_list = list()
     for index, image_file in enumerate(image_files):
-        if (label_indices is None and (index + 1) == len(image_files)) \
-                or (label_indices is not None and index in label_indices):
+        if index in label_indices:
             interpolation = "nearest"
         else:
             interpolation = "linear"
@@ -49,9 +46,9 @@ def read_image_files(image_files, image_shape=None, crop=None, label_indices=Non
 
     return image_list
 
-# Doc hinh xong crop va resize.
+# Read MRI image then crop and resize.
 def read_image(in_file, image_shape=None, interpolation='linear', crop=None):
-    print("Reading: {0}".format(in_file))
+    print("Reading: {}".format(in_file))
     image = nib.load(os.path.abspath(in_file))
     image = fix_shape(image)
     if crop:
@@ -67,7 +64,7 @@ def fix_shape(image):
         return image.__class__(dataobj=np.squeeze(image.get_data()), affine=image.affine)
     return image
 
-## ??
+# Resize image to new_shape use library SimpleITK
 def resize(image, new_shape, interpolation="linear"):
     image = reorder_img(image, resample=interpolation)
     zoom_level = np.divide(new_shape, image.shape)

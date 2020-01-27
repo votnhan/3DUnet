@@ -7,7 +7,7 @@ def calculate_origin_offset(new_spacing, old_spacing):
 
 
 def sitk_resample_to_spacing(image, new_spacing=(1.0, 1.0, 1.0), interpolator=sitk.sitkLinear, default_value=0.):
-    # "zoom_factor" la shape moi / shape cu
+    # "zoom_factor" is new shape / old shape
     zoom_factor = np.divide(image.GetSpacing(), new_spacing)
     new_size = np.asarray(np.ceil(np.round(np.multiply(zoom_factor, image.GetSize()), decimals=5)), dtype=np.int16)
     offset = calculate_origin_offset(new_spacing, image.GetSpacing())
