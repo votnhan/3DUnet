@@ -50,7 +50,7 @@ def load_old_model(model_file, config=None):
         if config:
             optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
             loss = getattr(module_metric, config["loss_fc"])
-            metrics = [x for x in getattr(module_metric, config["metrics"])]
+            metrics = [getattr(module_metric, x) for x in config['metrics']]
             model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
         return model
