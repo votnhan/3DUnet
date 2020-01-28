@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import argparse
 
 import sys
 sys.path.append('../')
@@ -11,18 +12,6 @@ from unet3d.model import isensee2017_model
 from unet3d.training import load_old_model, train_model
 import unet3d.metrics as module_metric
 import keras.optimizers as opts
-
-config_file = 'config.json'
-with open(config_file, 'r') as cfg:
-    config = json.load(cfg)
-
-for key in config["keys_tuple"]:
-    config[key] = tuple(config[key])
-
-if "patch_shape" in config and config["patch_shape"] is not None:
-    config["input_shape"] = tuple([config["nb_channels"]] + list(config["patch_shape"]))
-else:
-    config["input_shape"] = tuple([config["nb_channels"]] + list(config["image_shape"]))
 
 def fetch_training_data_files(return_subject_ids=False):
     training_data_files = list()
@@ -41,9 +30,9 @@ def fetch_training_data_files(return_subject_ids=False):
     else:
         return training_data_files
 
-
-def main(overwrite=False):
+def main(config=None):
     # convert input images into an hdf5 file
+    overwrite = config['overwrite']
     if overwrite or not os.path.exists(config["data_file"]):
         training_files, subject_ids = fetch_training_data_files(return_subject_ids=True)
 
@@ -98,4 +87,18 @@ def main(overwrite=False):
 
 
 if __name__ == "__main__":
-    main(overwrite=config["overwrite"])
+    args = argparse.ArgumentParser(description='Residual 3D U-net For Brain Tumor Segmentation')
+    args.add_argument('-c', '--config', default='config.json', type=str,
+                      help='config file path (default: config.json)')
+    args = args.parse_args()
+    
+    config_file = args.config
+    with open(config_file, 'r') as cfg:
+        config = json.load(cfg)
+
+    for key in config["keys_tuple"]:
+        config[key] = tuple(config[key])
+
+    config["input_shape"] = tuple([config["nb_channels"]] + list(config["image_shape"]))
+    
+    main(config)

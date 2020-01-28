@@ -13,7 +13,6 @@ data.hdf5
 *.h5
 *.ipynb
 *.pyc
-*.json
 test_dir
 *.hdr
 *.img

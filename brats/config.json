@@ -1,0 +1,43 @@
+{
+    "image_shape": [128, 128, 128],
+    "labels": [0, 1, 2, 4],
+    "n_base_filters": 16,
+    "n_labels": 4,
+    "all_modalities": ["t1", "t1ce", "flair", "t2"],
+    "label_modality": ["seg"],
+    "nb_channels": 4,
+    "deconvolution": true,
+    "batch_size": 1,
+    "validation_batch_size": 2,
+    "n_epochs": 500,
+    "patience": 10,
+    "early_stop": 50,
+    "optimizer": {
+        "name": "Adam",
+        "args":{
+            "lr":0.0005
+        },
+        "args_after":{
+            "lr":0.001,
+            "momentum":0.9,
+            "decay":1e-6,
+            "nesterov":true
+        }
+    },
+    "learning_rate_drop": 0.5,
+    "validation_split": 0.8,
+    "flip": false,
+    "permute": true,
+    "distort": null,
+    "augment": false,
+    "skip_blank": false,
+    "data_file": "brats_data_isensee_2018.h5",
+    "model_file": "isensee_2018_model.h5",
+    "weigths_file": "isensee_2018_weights.h5",
+    "training_file": "isensee_training_ids.pkl",
+    "validation_file": "isensee_validation_ids.pkl",
+    "overwrite": false,
+    "keys_tuple": ["image_shape", "labels"],
+    "loss_fc": "weighted_dice_coefficient_loss",
+    "metrics": ["weighted_dice_coefficient_loss"]
+}
