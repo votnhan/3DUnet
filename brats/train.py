@@ -41,7 +41,7 @@ def main(config=None):
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):
-        model = load_old_model(config["model_file"])
+        model = load_old_model(config, re_compile=False)
     else:
         # instantiate new model
         model = isensee2017_model(input_shape=config["input_shape"], 

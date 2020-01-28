@@ -5,11 +5,14 @@ from keras import losses
 
 
 def dice_coefficient(y_true, y_pred, smooth=1.):
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
+    y_true_f = K.cast(y_true, dtype='float32')
+    y_pred_f = K.cast(y_pred, dtype='float32')
     intersection = K.sum(y_true_f * y_pred_f)
+    sum_true = K.sum(y_true_f)
+    sum_pred = K.sum(y_pred_f)
     # this formula need to be proved !
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    dice = (2. * intersection + smooth) / (sum_true + sum_pred + smooth)
+    return K.mean(dice) 
 
 
 def dice_coefficient_loss(y_true, y_pred):
@@ -50,6 +53,28 @@ def get_label_dice_coefficient_function(label_index):
     f.__setattr__('__name__', 'label_{0}_dice_coef'.format(label_index))
     return f
 
+def get_one_hot_from_output(y_true, y_pred):
+    cls_true = K.argmax(y_true, axis=-4)
+    cls_pred = K.argmax(y_pred, axis=-4)
+    return cls_true, cls_pred
+
+def dice_whole_tumor(y_true, y_pred):
+    mask_true, mask_pred = get_one_hot_from_output(y_true, y_pred)
+    mask_true = mask_true > 0
+    mask_pred = mask_pred > 0
+    return dice_coefficient(mask_true, mask_pred)
+
+def dice_tumor_core(y_true, y_pred):
+    mask_true, mask_pred = get_one_hot_from_output(y_true, y_pred)
+    mask_true = (mask_true == 1) | (mask_true == 3)
+    mask_pred = (mask_pred == 1) | (mask_pred == 3)
+    return dice_coefficient(mask_true, mask_pred)
+
+def dice_enhancing_tumor(y_true, y_pred):
+    mask_true, mask_pred = get_one_hot_from_output(y_true, y_pred)
+    mask_true = mask_true == 3
+    mask_pred = mask_pred == 3
+    return dice_coefficient(mask_true, mask_pred)
 
 dice_coef = dice_coefficient
 dice_coef_loss = dice_coefficient_loss

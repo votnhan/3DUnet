@@ -6,7 +6,6 @@ from keras import backend as K
 from keras.callbacks import ModelCheckpoint, CSVLogger, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
 from keras.models import load_model
 
-from unet3d.metrics import weighted_dice_coefficient_loss
 import unet3d.metrics as module_metric
 
 from unet3d.model import unet_model_3d, isensee2017_model
@@ -36,18 +35,20 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
     return callbacks
 
 
-def load_old_model(model_file, config=None):
+def load_old_model(config, re_compile=False):
     print("Loading pre-trained model")
     custom_objects = dict()
-    custom_objects['weighted_dice_coefficient_loss'] = weighted_dice_coefficient_loss
+    custom_objects[config['loss_fc']] = getattr(module_metric, config['loss_fc'])
+    for metric in config['metrics']:
+        custom_objects[metric] = getattr(module_metric, metric)
     try:
         from keras_contrib.layers import InstanceNormalization
         custom_objects["InstanceNormalization"] = InstanceNormalization
     except ImportError:
         pass
     try:
-        model = load_model(model_file, custom_objects=custom_objects)
-        if config:
+        model = load_model(config['model_file'], custom_objects=custom_objects)
+        if re_compile:
             optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
             loss = getattr(module_metric, config["loss_fc"])
             metrics = [getattr(module_metric, x) for x in config['metrics']]
