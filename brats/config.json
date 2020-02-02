@@ -36,6 +36,7 @@
     "weigths_file": "isensee_2018_weights.h5",
     "training_file": "isensee_training_ids.pkl",
     "validation_file": "isensee_validation_ids.pkl",
+    "model_best":"checkpoints/model_best.h5",
     "overwrite": false,
     "keys_tuple": ["image_shape", "labels"],
     "loss_fc": "weighted_dice_coefficient_loss",

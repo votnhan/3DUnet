@@ -82,7 +82,8 @@ def main(config=None):
                 learning_rate_drop=config["learning_rate_drop"],
                 learning_rate_patience=config["patience"],
                 early_stopping_patience=config["early_stop"],
-                n_epochs=config["n_epochs"])
+                n_epochs=config["n_epochs"],
+                model_best_path=config['model_best'])
     data_file_opened.close()
 
 

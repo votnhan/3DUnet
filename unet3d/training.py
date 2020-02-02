@@ -20,7 +20,7 @@ def step_decay(epoch, initial_lrate, drop, epochs_drop):
 
 def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0.5, learning_rate_epochs=None,
                   learning_rate_patience=50, logging_file="training.log", verbosity=1,
-                  early_stopping_patience=None):
+                  early_stopping_patience=None, model_best_path='checkpoints/model_best.h5'):
     callbacks = list()
     callbacks.append(ModelCheckpoint(model_file, save_best_only=True))
     callbacks.append(CSVLogger(logging_file, append=True))
@@ -32,6 +32,8 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
                                            verbose=verbosity))
     if early_stopping_patience:
         callbacks.append(EarlyStopping(verbose=verbosity, patience=early_stopping_patience))
+    
+    callbacks.append(ModelCheckpoint(model_best_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min'))
     return callbacks
 
 
@@ -65,7 +67,7 @@ def load_old_model(config, re_compile=False):
 
 def train_model(model, model_file, training_generator, validation_generator, steps_per_epoch, validation_steps,
                 initial_learning_rate=0.001, learning_rate_drop=0.5, learning_rate_epochs=None, n_epochs=500,
-                learning_rate_patience=20, early_stopping_patience=None):
+                learning_rate_patience=20, early_stopping_patience=None, model_best_path=None):
     """
     Train a Keras model.
     :param early_stopping_patience: If set, training will end early if the validation loss does not improve after the
@@ -96,4 +98,5 @@ def train_model(model, model_file, training_generator, validation_generator, ste
                                                 learning_rate_drop=learning_rate_drop,
                                                 learning_rate_epochs=learning_rate_epochs,
                                                 learning_rate_patience=learning_rate_patience,
-                                                early_stopping_patience=early_stopping_patience))
+                                                early_stopping_patience=early_stopping_patience,
+                                                model_best_path=model_best_path))
