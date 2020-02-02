@@ -1,21 +1,26 @@
 import os
 import sys
+import json
 
 sys.path.append('../')
 
-from brats.train_isensee2017 import config
 from unet3d.prediction import run_validation_cases
 
+def prepare_config(config_file='config.json'):
+    config_file = 'config.json'
+    with open(config_file, 'r') as cfg:
+        config = json.load(cfg)
+
+    for key in config["keys_tuple"]:
+        config[key] = tuple(config[key])
+    config["input_shape"] = tuple([config["nb_channels"]] + list(config["image_shape"]))
+    return config
 
 def main():
+
+    config = prepare_config()
     prediction_dir = os.path.abspath("prediction")
-    run_validation_cases(validation_keys_file=config["validation_file"],
-                         model_file=config["model_file"],
-                         training_modalities=config["training_modalities"],
-                         labels=config["labels"],
-                         hdf5_file=config["data_file"],
-                         output_label_map=True,
-                         output_dir=prediction_dir)
+    run_validation_cases(config=config, output_label_map=True, output_dir=prediction_dir)
 
 
 if __name__ == "__main__":
