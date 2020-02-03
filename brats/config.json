@@ -26,6 +26,7 @@
     },
     "learning_rate_drop": 0.5,
     "validation_split": 0.8,
+    "accumulation_step": 4,
     "flip": false,
     "permute": true,
     "distort": null,

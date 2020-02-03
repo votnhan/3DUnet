@@ -1,5 +1,6 @@
 import math
 import keras.optimizers as opts
+import runai.ga
 from functools import partial
 
 from keras import backend as K
@@ -52,6 +53,11 @@ def load_old_model(config, re_compile=False):
         model = load_model(config['model_file'], custom_objects=custom_objects)
         if re_compile:
             optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
+            
+            if config['accumulation_step'] > 1:
+                optimizer = runai.ga.keras.optimizers.Optimizer(optimizer, 
+                                    steps=config['accumulation_step'])
+            
             loss = getattr(module_metric, config["loss_fc"])
             metrics = [getattr(module_metric, x) for x in config['metrics']]
             model.compile(optimizer=optimizer, loss=loss, metrics=metrics)

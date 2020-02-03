@@ -5,3 +5,4 @@ tables>=3.4.2
 nibabel>=2.1.0
 nipype
 SimpleITK
+runai
