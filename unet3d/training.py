@@ -1,6 +1,11 @@
 import math
 import keras.optimizers as opts
 import runai.ga
+import time
+import six
+import csv
+import numpy as np
+from collections import Iterable, OrderedDict
 from functools import partial
 
 from keras import backend as K
@@ -11,7 +16,55 @@ import unet3d.metrics as module_metric
 
 from unet3d.model import unet_model_3d, isensee2017_model
 
-K.set_image_dim_ordering('th')
+K.common.set_image_dim_ordering('th')
+
+class CSVLoggerTimeEpoch(CSVLogger):
+    def __init__(self, filename, separator=',', append=False):
+        super().__init__(filename, separator, append)
+    
+    def on_epoch_begin(self, batch, logs=None):
+        self.epoch_time_start = time.time()
+    
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+
+        def handle_value(k):
+            is_zero_dim_ndarray = isinstance(k, np.ndarray) and k.ndim == 0
+            if isinstance(k, six.string_types):
+                return k
+            elif isinstance(k, Iterable) and not is_zero_dim_ndarray:
+                return '"[%s]"' % (', '.join(map(str, k)))
+            else:
+                return k
+
+        if self.keys is None:
+            self.keys = sorted(logs.keys())
+
+        if self.model.stop_training:
+            # We set NA so that csv parsers do not fail for this last epoch.
+            logs = dict([(k, logs[k] if k in logs else 'NA') for k in self.keys])
+
+        if not self.writer:
+            class CustomDialect(csv.excel):
+                delimiter = self.sep
+            fieldnames = ['epoch', 'time_for_epoch'] + self.keys
+            if six.PY2:
+                fieldnames = [unicode(x) for x in fieldnames]
+            self.writer = csv.DictWriter(self.csv_file,
+                                         fieldnames=fieldnames,
+                                         dialect=CustomDialect)
+            if self.append_header:
+                self.writer.writeheader()
+
+        row_dict = OrderedDict({'epoch': epoch})
+        delta_time = time.time() - self.epoch_time_start
+        row_dict.update({'time_for_epoch': delta_time})
+        row_dict.update((key, handle_value(logs[key])) for key in self.keys)
+        self.writer.writerow(row_dict)
+        self.csv_file.flush()
+
+
+
 
 
 # learning rate schedule
@@ -24,7 +77,7 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
                   early_stopping_patience=None, model_best_path='checkpoints/model_best.h5'):
     callbacks = list()
     callbacks.append(ModelCheckpoint(model_file, save_best_only=True))
-    callbacks.append(CSVLogger(logging_file, append=True))
+    callbacks.append(CSVLoggerTimeEpoch(logging_file, append=True))
     if learning_rate_epochs:
         callbacks.append(LearningRateScheduler(partial(step_decay, initial_lrate=initial_learning_rate,
                                                        drop=learning_rate_drop, epochs_drop=learning_rate_epochs)))
