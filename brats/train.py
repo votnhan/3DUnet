@@ -40,7 +40,7 @@ def fetch_training_data_files(return_subject_ids=False):
         subject_ids.append(subject_dir_name)
         subject_files = list()
         
-        for modality in config["training_modalities"] + config["label_modality"]:
+        for modality in config["all_modalities"] + config["label_modality"]:
             subject_files.append(os.path.join(subject_dir, subject_dir_name + '_' + modality + ".nii.gz"))
         
         training_data_files.append(tuple(subject_files))
