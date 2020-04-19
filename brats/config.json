@@ -41,5 +41,6 @@
     "overwrite": false,
     "keys_tuple": ["image_shape", "labels"],
     "loss_fc": "weighted_dice_coefficient_loss",
-    "metrics": ["dice_whole_tumor", "dice_tumor_core", "dice_enhancing_tumor"]
+    "metrics": ["dice_whole_tumor", "dice_tumor_core", "dice_enhancing_tumor"],
+    "normalization_type": "independent"
 }

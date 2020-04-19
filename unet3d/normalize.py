@@ -86,3 +86,20 @@ def normalize_data_storage(data_storage):
     return data_storage
 
 
+def normalize_data_storage_independent(data_storage):
+    
+    for index in range(data_storage.shape[0]):
+        data = data_storage[index]
+        brain_masks = [data[i] > 0 for i in range(data.shape[0])]
+        brain_data = [data[i][x] for i, x in enumerate(brain_masks)]
+        mean = np.asarray([x.mean() for x in brain_data])
+        std = np.asarray([x.std() for x in brain_data])
+        for i, mask in enumerate(brain_masks):
+            data_storage[index][i][mask] -= mean[i]
+            data_storage[index][i][mask] /= std[i]
+    
+    return data_storage
+
+
+
+

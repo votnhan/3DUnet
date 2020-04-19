@@ -56,7 +56,7 @@ def main(config=None):
         training_files, subject_ids = fetch_training_data_files(return_subject_ids=True)
 
         write_data_to_file(training_files, config["data_file"], image_shape=config["image_shape"],
-                           subject_ids=subject_ids)
+                           subject_ids=subject_ids, norm_type=config['normalization_type'])
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):
