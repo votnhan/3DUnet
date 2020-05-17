@@ -35,7 +35,9 @@ tfback._get_available_gpus = _get_available_gpus
 def fetch_training_data_files(return_subject_ids=False):
     training_data_files = list()
     subject_ids = list()
-    for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "data", "Train", "*", "*")):
+    subject_paths = glob.glob(os.path.join(os.path.dirname(__file__), "data", "Train", "*", "*"))
+    subject_paths.sort()
+    for subject_dir in subject_paths:
         subject_dir_name = os.path.basename(subject_dir)
         subject_ids.append(subject_dir_name)
         subject_files = list()
