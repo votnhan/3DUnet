@@ -87,6 +87,7 @@ def normalize_data_storage(data_storage):
 
 
 def normalize_data_storage_independent(data_storage):
+    print('Independent norm !')
     
     for index in range(data_storage.shape[0]):
         data = data_storage[index]
@@ -94,9 +95,14 @@ def normalize_data_storage_independent(data_storage):
         brain_data = [data[i][x] for i, x in enumerate(brain_masks)]
         mean = np.asarray([x.mean() for x in brain_data])
         std = np.asarray([x.std() for x in brain_data])
+        new_data_list = []
         for i, mask in enumerate(brain_masks):
-            data_storage[index][i][mask] -= mean[i]
-            data_storage[index][i][mask] /= std[i]
+            new_modal = (data[i] - mean[i]) / std[i]
+            new_modal[np.invert(mask)] = 0.0
+            new_data_list.append(np.expand_dims(new_modal, 0))
+
+        new_data = np.concatenate(new_data_list, 0)
+        data_storage[index] = new_data
     
     return data_storage
 
