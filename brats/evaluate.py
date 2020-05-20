@@ -1,5 +1,6 @@
 import numpy as np
 import nibabel as nib
+import argparse
 import os
 import glob
 import pandas as pd
@@ -48,10 +49,24 @@ def get_Hd_distance(truth, prediction):
   hd_ab = max(d_ab, d_ba)
   return hd_ab
 
-def main():
-    header = ("WholeTumor", "TumorCore", "EnhancingTumor")
+metrics_dict = {
+    'dice_score': dice_coefficient,
+    'sensitivity': get_Sensitivity,
+    'specificity': get_Specificity,
+    'hd_distance': get_Hd_distance
+}
+
+y_labels_dict = {
+    'dice_score': 'Dice Score',
+    'sensitivity': 'Sensitivity',
+    'specificity': 'Specificity',
+    'hd_distance': 'Hausdorff Distance'
+}
+
+def main(metric_names):
+    header = ("Whole Tumor", "Tumor Core", "Enhancing Tumor")
     masking_functions = (get_whole_tumor_mask, get_tumor_core_mask, get_enhancing_tumor_mask)
-    rows = list()
+    rows = list()*len(metric_names)
     subject_ids = list()
     for case_folder in glob.glob("prediction/*"):
         if not os.path.isdir(case_folder):
@@ -63,22 +78,26 @@ def main():
         prediction_file = os.path.join(case_folder, "prediction.nii.gz")
         prediction_image = nib.load(prediction_file)
         prediction = prediction_image.get_data()
-        rows.append([dice_coefficient(func(truth), func(prediction))for func in masking_functions])
+        for i, x in enumerate(metric_names):
+            if x not in metrics_dict:
+                print('{} not in metrics dictionary !'.format(x))
+                continue
+            metric_val = [metrics_dict[x](func(truth), func(prediction)) for func in masking_functions]
+            rows[i].append(metric_val)
 
-    df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
-    df.to_csv("./prediction/brats_scores.csv")
+    for i, x in enumerate(metric_names):
+        df = pd.DataFrame.from_records(rows[i], columns=header, index=subject_ids)
+        df.to_csv("./prediction/{}.csv".format(x))
 
-    scores = dict()
-    for index, score in enumerate(df.columns):
-        values = df.values.T[index]
-        scores[score] = values[np.isnan(values) == False]
+        scores = dict()
+        for index, score in enumerate(df.columns):
+            values = df.values.T[index]
+            scores[score] = values[np.isnan(values) == False]
 
-    plt.boxplot(list(scores.values()), labels=list(scores.keys()))
-    plt.ylabel("Dice Coefficient")
-    plt.savefig("validation_scores_boxplot.png")
-    plt.close()
-
-    visualize_training_process('./training.log')
+        plt.boxplot(list(scores.values()), labels=list(scores.keys()))
+        plt.ylabel(y_labels_dict[x])
+        plt.savefig("{}_boxplot.png".format(x))
+        plt.close()
 
 def visualize_training_process(logfile):
     if os.path.exists(logfile):
@@ -94,6 +113,12 @@ def visualize_training_process(logfile):
 
     return 'Log File Not Found'
 
+parser = argparse.ArgumentParser(description='Evaluation of model')
+parser.add_argument('--metrics_name', type=str, nargs='+', 
+            default=['dice_score', 'sensitivity', 'specificity', 'hd_distance'])
+
+
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args()
+    main(args.metrics_name)
     #visualize_training_process('./training.log')
