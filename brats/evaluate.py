@@ -66,7 +66,7 @@ y_labels_dict = {
 def main(metric_names):
     header = ("Whole Tumor", "Tumor Core", "Enhancing Tumor")
     masking_functions = (get_whole_tumor_mask, get_tumor_core_mask, get_enhancing_tumor_mask)
-    rows = list()*len(metric_names)
+    rows = [list() for i in range(len(metric_names))]
     subject_ids = list()
     for case_folder in glob.glob("prediction/*"):
         if not os.path.isdir(case_folder):
@@ -96,7 +96,7 @@ def main(metric_names):
 
         plt.boxplot(list(scores.values()), labels=list(scores.keys()))
         plt.ylabel(y_labels_dict[x])
-        plt.savefig("{}_boxplot.png".format(x))
+        plt.savefig("./prediction/{}_boxplot.png".format(x))
         plt.close()
 
 def visualize_training_process(logfile):
