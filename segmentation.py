@@ -120,8 +120,6 @@ def segmentation_for_patient(subject_fd, config, output_path):
   subject_data_fixed_size, affine = crop_subject_modals(image_mris, input_shape, 
                                                         slices)
   subject_tensor = normalize_data(subject_data_fixed_size)
-  t2_arr = subject_tensor[3]
-  t2_image = nib.Nifti1Image(t2_arr, affine)
 
   subject_tensor = np.expand_dims(subject_tensor, axis=0)
   output_predict = predict(model, subject_tensor, affine)
@@ -133,14 +131,7 @@ def segmentation_for_patient(subject_fd, config, output_path):
   output_file = os.path.join(output_fd, '{}_prediction{}'.format(subject_name, 
                                                       extension))
   output.to_filename(output_file)
-
-  t2_path = os.path.join(output_fd, '{}_t2{}'.format(subject_name, 
-                                                      extension))
-  t2_image.to_filename(t2_path)
-
-  output_original_path = os.path.join(output_fd, '{}_pred_original{}'.format(subject_name, 
-                                                      extension))
-  output_predict.to_filename(output_original_path)
+  
   print('Patient {} is done !'.format(subject_fd))
 
 parser = argparse.ArgumentParser(description='Segment data')

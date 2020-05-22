@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import os
 from pandas import DataFrame
 
-log_file = 'training_4.log'
-log_file_mdf = 'training_4_mdf.log'
+log_file = 'training.log'
+log_file_mdf = 'training_mdf.log'
 
 def edit_epoch_collumn_in_logfile(inp_file, outp_file):
     csv_inp = pd.read_csv(log_file)
@@ -17,8 +17,8 @@ def edit_epoch_collumn_in_logfile(inp_file, outp_file):
 def visualize_training_process(logfile):
     if os.path.exists(logfile):
         training_df = pd.read_csv(logfile).set_index('epoch')
-        plt.plot(training_df['loss'].values, label='training loss')
-        plt.plot(training_df['val_loss'].values, label='validation loss')
+        plt.plot(training_df['loss'].values, label='Train loss')
+        plt.plot(training_df['val_loss'].values, label='Validation loss')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.xlim((0, len(training_df.index)))
@@ -29,5 +29,5 @@ def visualize_training_process(logfile):
     return 'Log File Not Found'
 
 
-# edit_epoch_collumn_in_logfile(log_file, log_file_mdf)
-# visualize_training_process(log_file_mdf)
+edit_epoch_collumn_in_logfile(log_file, log_file_mdf)
+visualize_training_process(log_file_mdf)
