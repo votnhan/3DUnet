@@ -63,20 +63,52 @@ y_labels_dict = {
     'hd_distance': 'Hausdorff Distance'
 }
 
-def main(metric_names):
+def get_file_path_for_evaluation(mode, output_path, label_path):
+    list_outputs = []
+    list_labels = []
+    pattern = os.path.join(output_path, '*')
+    subject_paths = glob.glob(pattern)
+    if mode == 'model_mode':
+        assert output_path == label_path
+        for subject_path in subject_paths:
+            output = os.path.join(subject_path, 'prediction.nii.gz')
+            label = os.path.join(subject_path, 'truth.nii.gz')
+            list_outputs.append(output)
+            list_labels.append(label)
+
+    elif mode == 'original_mode':
+        for subject_path in subject_paths:
+            subject_name = os.path.basename(subject_path)
+            output_file = '{}_prediction.nii.gz'.format(subject_name)
+            label_file = '{}_seg.nii.gz'.format(subject_name)
+            output = os.path.join(subject_path, output_file)
+            label = os.path.join(label_path, subject_name, label_file)
+            list_outputs.append(output)
+            list_labels.append(label)
+
+    else:
+        print('{} is not implemented !'.format(mode))
+    
+    return list_outputs, list_labels
+
+def main(metric_names, prediction_path, label_path, output_folder, mode):
+    
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
     header = ("Whole Tumor", "Tumor Core", "Enhancing Tumor")
     masking_functions = (get_whole_tumor_mask, get_tumor_core_mask, get_enhancing_tumor_mask)
     rows = [list() for i in range(len(metric_names))]
     subject_ids = list()
-    for case_folder in glob.glob("prediction/*"):
-        if not os.path.isdir(case_folder):
+    list_outputs, list_labels = get_file_path_for_evaluation(mode, prediction_path, label_path)
+    outputs_labels = zip(list_outputs, list_labels)
+    for output_path, label_path in outputs_labels:
+        if not os.path.exists(output_path):
             continue
-        subject_ids.append(os.path.basename(case_folder))
-        truth_file = os.path.join(case_folder, "truth.nii.gz")
-        truth_image = nib.load(truth_file)
+
+        truth_image = nib.load(output_path)
         truth = truth_image.get_data()
-        prediction_file = os.path.join(case_folder, "prediction.nii.gz")
-        prediction_image = nib.load(prediction_file)
+        prediction_image = nib.load(label_path)
         prediction = prediction_image.get_data()
         for i, x in enumerate(metric_names):
             if x not in metrics_dict:
@@ -85,19 +117,31 @@ def main(metric_names):
             metric_val = [metrics_dict[x](func(truth), func(prediction)) for func in masking_functions]
             rows[i].append(metric_val)
 
+    export_csv_files(rows, header, metric_names, subject_ids, output_folder)
+    export_boxplot(rows, header, metric_names, output_folder)
+
+
+def export_csv_files(data, header, metric_names, subject_ids, output_folder):
     for i, x in enumerate(metric_names):
-        df = pd.DataFrame.from_records(rows[i], columns=header, index=subject_ids)
-        df.to_csv("./prediction/{}.csv".format(x))
+        df = pd.DataFrame.from_records(data[i], columns=header, index=subject_ids)
+        output_path = os.path.join(output_folder, '{}.csv'.format(x))
+        df.to_csv(output_path)
+        print('Export csv file for {} metric'.format(x))
 
+
+def export_boxplot(data, header, metric_names, output_folder):        
+    data_arr = np.asarray(data)    
+    for i, metric in enumerate(metric_names):
         scores = dict()
-        for index, score in enumerate(df.columns):
-            values = df.values.T[index]
+        for j, score in enumerate(header):
+            values = data_arr[i, :, j]
             scores[score] = values[np.isnan(values) == False]
-
+        
         plt.boxplot(list(scores.values()), labels=list(scores.keys()))
-        plt.ylabel(y_labels_dict[x])
-        plt.savefig("./prediction/{}_boxplot.png".format(x))
+        plt.ylabel(y_labels_dict[metric])
+        plt.savefig(os.path.join(output_folder, '{}_boxplot.png'.format(metric)))
         plt.close()
+
 
 def visualize_training_process(logfile):
     if os.path.exists(logfile):
@@ -117,8 +161,14 @@ parser = argparse.ArgumentParser(description='Evaluation of model')
 parser.add_argument('--metrics_name', type=str, nargs='+', 
             default=['dice_score', 'sensitivity', 'specificity', 'hd_distance'])
 
+parser.add_argument('--output_folder', type=str, default='output')
+parser.add_argument('--prediction_folder', type=str, default='prediction')
+parser.add_argument('--label_folder', type=str, default='prediction')
+parser.add_argument('--mode', type=str, default='model_mode', help='model_mode or original_mode')
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args.metrics_name)
+    main(args.metrics_name, args.prediction_folder, args.label_folder, 
+    args.output_folder, args.mode)
     #visualize_training_process('./training.log')
