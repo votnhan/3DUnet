@@ -77,12 +77,20 @@ def get_file_path_for_evaluation(mode, output_path, label_path):
             list_labels.append(label)
 
     elif mode == 'original_mode':
+        pattern_label = os.path.join(label_path, '*', '*')
+        label_paths = glob.glob(pattern_label)
         for subject_path in subject_paths:
             subject_name = os.path.basename(subject_path)
             output_file = '{}_prediction.nii.gz'.format(subject_name)
             label_file = '{}_seg.nii.gz'.format(subject_name)
+            lbl_container = None
+            for lbl in label_paths:
+                if subject_name in lbl:
+                    lbl_container = lbl
+                    break
+
             output = os.path.join(subject_path, output_file)
-            label = os.path.join(label_path, subject_name, label_file)
+            label = os.path.join(lbl_container, label_file)
             list_outputs.append(output)
             list_labels.append(label)
 
@@ -105,7 +113,9 @@ def main(metric_names, prediction_path, label_path, output_folder, mode):
     for output_path, label_path in outputs_labels:
         if not os.path.exists(output_path):
             continue
-
+        
+        subject_id = output_path.split('/')[-2]
+        subject_ids.append(subject_id)
         truth_image = nib.load(output_path)
         truth = truth_image.get_data()
         prediction_image = nib.load(label_path)

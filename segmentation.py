@@ -6,6 +6,7 @@ import json
 import sys
 import copy
 import argparse
+import glob
 sys.path.append('./')
 
 from unet3d.utils.utils import resize, read_image, crop_img_to, fix_shape
@@ -111,6 +112,24 @@ def get_slices(foreground):
   slices = [slice(s, e) for s, e in zip(start, end)]
   return slices
 
+def segmentation_for_set_patients(list_ids_file, path_dataset, config, output_path):
+  file = open(list_ids_file, 'r')
+  contents = file.read()
+  list_ids = contents.split('\n')
+  file.close()
+  pattern = os.path.join(path_dataset, '*', '*')
+  list_paths = glob.glob(pattern)
+  for idx, ids in enumerate(list_ids):
+    for path_subject in list_paths:
+      if ids in path_subject:
+        segmentation_for_patient(path_subject, config, output_path)
+        break
+    
+    print('Done {}/{} patients'.format(idx+1, len(list_ids)))
+
+  print('Done for dataset: {}'.format(path_dataset))
+
+
 def segmentation_for_patient(subject_fd, config, output_path):
   model = load_old_model(config)
   subject_name = os.path.basename(subject_fd)
@@ -146,3 +165,6 @@ if __name__ == "__main__":
     with open(args.config_file, 'r') as cfg:
         config = json.load(cfg)
     segmentation_for_patient(args.subject_fd, config, args.output_path)
+    segmentation_for_set_patients('val_subject_name.txt', 'brats/data/Train', 
+                              config, 'output/original_size')
+
