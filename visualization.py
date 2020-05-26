@@ -123,28 +123,28 @@ def overlay_mask(subject_fd, modal_name, mask_path, index, plane, output_fd, mod
     
 
 # Get slice of subject  
-subject_path = 'E:\machinelearning\data\BRAST2018\Train\HGG\Brats18_TCIA01_147_1'
+subject_path = 'E:\machinelearning\data\BRAST2018\Train\HGG\Brats18_TCIA08_242_1'
 modal_list = ['t1', 't1ce', 'flair', 't2']
-slice_idx_list = [143, 153]
-plane_list = ['sagittal', 'coronal']
+slice_idx_list = [142]
+plane_list = ['coronal']
 output_folder = 'E:/luanvantn/images/3dResidualUnet'
 
-# get_slices_over_modals(subject_path, modal_list, slice_idx_list, output_folder)
+get_slices_over_modals(subject_path, modal_list, slice_idx_list, output_folder)
 
 # Get overlay result
-pred_mask_path = "E:/machinelearning/data/BRAST2018/Result/3dResidualUNet/restore_size_prediction/Brats18_TCIA01_147_1/Brats18_TCIA01_147_1_prediction.nii.gz"
-label_mask_path = 'E:\machinelearning\data\BRAST2018\Train\HGG\Brats18_TCIA01_147_1\Brats18_TCIA01_147_1_seg.nii.gz'
+pred_mask_path = "E:/machinelearning/data/BRAST2018/Result/3dResidualUNet/restore_size_prediction/Brats18_TCIA08_242_1/Brats18_TCIA08_242_1_prediction.nii.gz"
+label_mask_path = 'E:\machinelearning\data\BRAST2018\Train\HGG\Brats18_TCIA08_242_1\Brats18_TCIA08_242_1_seg.nii.gz'
 
 # Axial
-# overlay_mask(subject_path, 't2', pred_mask_path, 74, 'axial', output_folder, 'pred')
-# overlay_mask(subject_path, 't2', label_mask_path, 74, 'axial', output_folder, 'label')
+# overlay_mask(subject_path, 't2', pred_mask_path, 52, 'axial', output_folder, 'pred')
+# overlay_mask(subject_path, 't2', label_mask_path, 52, 'axial', output_folder, 'label')
 
-#Sagittal
-overlay_mask(subject_path, 't2', pred_mask_path, 143, 'sagittal', output_folder, 'pred')
-overlay_mask(subject_path, 't2', label_mask_path, 143, 'sagittal', output_folder, 'label')
+# Sagittal
+# overlay_mask(subject_path, 't2', pred_mask_path, 143, 'sagittal', output_folder, 'pred')
+# overlay_mask(subject_path, 't2', label_mask_path, 143, 'sagittal', output_folder, 'label')
 
-#Coronal
-# overlay_mask(subject_path, 't2', pred_mask_path, 153, 'coronal', output_folder, 'pred')
-# overlay_mask(subject_path, 't2', label_mask_path, 153, 'coronal', output_folder, 'label')
+# Coronal
+# overlay_mask(subject_path, 't2', pred_mask_path, 142, 'coronal', output_folder, 'pred')
+# overlay_mask(subject_path, 't2', label_mask_path, 142, 'coronal', output_folder, 'label')
 
 # plt.show()
