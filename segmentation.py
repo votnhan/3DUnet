@@ -72,6 +72,19 @@ def crop_subject_modals(subject_modal_imgs, input_shape, slices):
   subject_data = np.asarray(subject_data)
   return subject_data, affine
 
+def resize_modal_image(subject_modal_imgs, target_shape, interpolation='linear'):
+  subject_data = []
+  affine = None
+  for i, modal_img in enumerate(subject_modal_imgs):
+    modal_img = fix_shape(modal_img)
+    new_img = resize(modal_img, new_shape=target_shape, interpolation=interpolation)
+    subject_data.append(new_img.get_data())
+    if i == 0:
+      affine = new_img.get_affine()
+
+  subject_data = np.asarray(subject_data)
+  return subject_data, affine
+
 def normalize_data(input_tensor):
     input_tensor = input_tensor.astype(np.float32)
     brain_mask = [input_tensor[i] > 0 for i in range(input_tensor.shape[0])]
@@ -130,20 +143,35 @@ def segmentation_for_set_patients(list_ids_file, path_dataset, config, output_pa
   print('Done for dataset: {}'.format(path_dataset))
 
 
-def segmentation_for_patient(subject_fd, config, output_path):
+def segmentation_for_patient(subject_fd, config, output_path, mode='size_same_input'):
   model = load_old_model(config)
   subject_name = os.path.basename(subject_fd)
   image_mris, original_affine, foreground = get_subject_tensor(subject_fd, 
                                                                subject_name)
-  slices = get_slices(foreground)
-  subject_data_fixed_size, affine = crop_subject_modals(image_mris, input_shape, 
-                                                        slices)
+  if mode == 'size_same_input':
+    slices = get_slices(foreground)
+    subject_data_fixed_size, affine = crop_subject_modals(image_mris, input_shape, 
+                                                          slices)
+  elif mode == 'size_interpolate':
+    target_shape = tuple(config['inference_shape'])
+    subject_data_fixed_size, affine = resize_modal_image(image_mris, target_shape)
+  else:
+    print('Do not support mode {} for inference'.format(mode))
+    return
+  
   subject_tensor = normalize_data(subject_data_fixed_size)
 
   subject_tensor = np.expand_dims(subject_tensor, axis=0)
   output_predict = predict(model, subject_tensor, affine)
   
-  output = restore_dimension(output_predict, slices, original_affine)
+  if mode == 'size_same_input':
+    output = restore_dimension(output_predict, slices, original_affine)
+  elif mode == 'size_interpolate':
+    output = resize(output_predict, new_shape=original_shape, interpolation='nearest')
+  else:
+    print('Do not support mode {} for inference'.format(mode))
+    return
+
   output_fd = os.path.join(output_path, subject_name)
   if not os.path.exists(output_fd):
     os.makedirs(output_fd)
