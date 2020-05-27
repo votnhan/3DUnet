@@ -15,8 +15,7 @@
     "optimizer": {
         "name": "Adam",
         "args":{
-            "lr":0.0005,
-            "weight_decay": 1e-5
+            "lr":0.0005
         },
         "args_after":{
             "lr":0.001,
