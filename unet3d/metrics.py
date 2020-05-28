@@ -3,6 +3,7 @@ from functools import partial
 from keras import backend as K
 from keras import losses
 import tensorflow.math as tfmth
+import numpy as np
 
 
 def dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=1.):
@@ -40,9 +41,16 @@ def weighted_dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=0.00001)
 def weighted_dice_coefficient_loss(y_true, y_pred):
     return 1 - weighted_dice_coefficient(y_true, y_pred)
 
+def weighted_cross_entropy_loss(y_true, y_pred, weights):
+    axis = (-1, -2, -3)
+    loss = K.sum(-y_true * K.log(y_pred), axis=axis)
+    weighted_loss = K.sum(loss*weights, axis=-1)
+    return K.mean(weighted_loss)
+
 
 def dice_and_entropy_combination_loss(y_true, y_pred):
-    return .99*weighted_dice_coefficient_loss(y_true, y_pred) + .01*losses.categorical_crossentropy(y_true, y_pred)
+    weights = 1 / np.array([0.9873, 0.002, 0.0077, 0.003])
+    return weighted_dice_coefficient_loss(y_true, y_pred) + weighted_cross_entropy_loss(y_true, y_pred, weights)
 
 
 def label_wise_dice_coefficient(y_true, y_pred, label_index):
@@ -83,3 +91,4 @@ def dice_enhancing_tumor(y_true, y_pred):
 
 dice_coef = dice_coefficient
 dice_coef_loss = dice_coefficient_loss
+combination_dice_coef_ce_loss = dice_and_entropy_combination_loss
