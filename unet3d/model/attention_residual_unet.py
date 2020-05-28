@@ -1,6 +1,6 @@
 from functools import partial
 
-from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate, Softmax
+from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate, Softmax, Multiply
 from keras.engine import Model
 from .unet import create_convolution_block, concatenate
 
@@ -8,7 +8,7 @@ from .unet import create_convolution_block, concatenate
 create_convolution_block = partial(create_convolution_block, activation=LeakyReLU, instance_normalization=True)
 
 
-def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5, dropout_rate=0.3,
+def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5, dropout_rate=0.3,
                       n_segmentation_levels=3, n_labels=4, activation_name="sigmoid"):
     """
     This function builds a model proposed by Isensee et al. for the BRATS 2017 competition:
@@ -53,8 +53,9 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
 
     segmentation_layers = list()
     for level_number in range(depth - 2, -1, -1):
+        masked_current_layer = create_attention_gate(level_output_layers[level_number], current_layer, level_filters[level_number])
         up_sampling = create_up_sampling_module(current_layer, level_filters[level_number])
-        concatenation_layer = concatenate([level_output_layers[level_number], up_sampling], axis=1)
+        concatenation_layer = concatenate([masked_current_layer, up_sampling], axis=1)
         localization_output = create_localization_module(concatenation_layer, level_filters[level_number])
         current_layer = localization_output
         if level_number < n_segmentation_levels:
@@ -81,6 +82,17 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
     model = Model(inputs=inputs, outputs=activation_block)
     return model
 
+def create_attention_gate(x, gating, inter_channels):
+    w_x = Conv3D(inter_channels, (1, 1, 1))(x)
+    w_gating = Conv3D(inter_channels, (1, 1, 1))(gating)
+    up_w_gating = UpSampling3D(size=(2, 2, 2))(w_gating)
+    sum_x_gating = Add()([w_x, up_w_gating])
+    relu_sum = Activation('relu')(sum_x_gating)
+    psi = Conv3D(1, (1, 1, 1))(relu_sum)
+    mask = Activation('sigmoid')(psi)
+    output_attention = Multiply()([x, mask])
+    return output_attention
+
 
 def create_localization_module(input_layer, n_filters):
     convolution1 = create_convolution_block(input_layer, n_filters)
@@ -99,3 +111,6 @@ def create_context_module(input_layer, n_level_filters, dropout_rate=0.3, data_f
     dropout = SpatialDropout3D(rate=dropout_rate, data_format=data_format)(convolution1)
     convolution2 = create_convolution_block(input_layer=dropout, n_filters=n_level_filters)
     return convolution2
+
+
+
