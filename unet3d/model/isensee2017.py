@@ -99,6 +99,3 @@ def create_context_module(input_layer, n_level_filters, dropout_rate=0.3, data_f
     dropout = SpatialDropout3D(rate=dropout_rate, data_format=data_format)(convolution1)
     convolution2 = create_convolution_block(input_layer=dropout, n_filters=n_level_filters)
     return convolution2
-
-
-
