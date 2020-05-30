@@ -153,7 +153,7 @@ def export_boxplot(data, header, metric_names, output_folder):
         plt.close()
 
 
-def visualize_training_process(logfile):
+def visualize_training_process(logfile, output_name):
     if os.path.exists(logfile):
         training_df = pd.read_csv(logfile).set_index('epoch')
         plt.plot(training_df['loss'].values, label='training loss')
@@ -162,7 +162,7 @@ def visualize_training_process(logfile):
         plt.xlabel('Epoch')
         plt.xlim((0, len(training_df.index)))
         plt.legend(loc='upper right')
-        plt.savefig('loss_graph.png')
+        plt.savefig('{}.png'.format(output_name))
         return 'Done'
 
     return 'Log File Not Found'

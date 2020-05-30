@@ -126,6 +126,7 @@ def get_slices(foreground):
   return slices
 
 def segmentation_for_set_patients(list_ids_file, path_dataset, config, output_path):
+  model = load_old_model(config)
   file = open(list_ids_file, 'r')
   contents = file.read()
   list_ids = contents.split('\n')
@@ -135,7 +136,7 @@ def segmentation_for_set_patients(list_ids_file, path_dataset, config, output_pa
   for idx, ids in enumerate(list_ids):
     for path_subject in list_paths:
       if ids in path_subject:
-        segmentation_for_patient(path_subject, config, output_path)
+        segmentation_for_patient(path_subject, config, output_path, model=model)
         break
     
     print('Done {}/{} patients'.format(idx+1, len(list_ids)))
@@ -143,8 +144,10 @@ def segmentation_for_set_patients(list_ids_file, path_dataset, config, output_pa
   print('Done for dataset: {}'.format(path_dataset))
 
 
-def segmentation_for_patient(subject_fd, config, output_path, mode='size_same_input'):
-  model = load_old_model(config)
+def segmentation_for_patient(subject_fd, config, output_path, model=None, mode='size_same_input'):
+  
+  if model is None:
+    model = load_old_model(config)
   subject_name = os.path.basename(subject_fd)
   image_mris, original_affine, foreground = get_subject_tensor(subject_fd, 
                                                                subject_name)
