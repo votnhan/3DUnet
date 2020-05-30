@@ -8,7 +8,7 @@ sys.path.append('../')
 
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators
-from unet3d.model import isensee2017_model
+from unet3d.model import isensee2017_model, attention_isensee2017_model
 from unet3d.training import load_old_model, train_model
 import unet3d.metrics as module_metric
 import keras.optimizers as opts

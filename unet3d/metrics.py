@@ -43,7 +43,7 @@ def weighted_dice_coefficient_loss(y_true, y_pred):
 
 def weighted_cross_entropy_loss(y_true, y_pred, weights):
     axis = (-1, -2, -3)
-    loss = K.sum(-y_true * K.log(y_pred), axis=axis)
+    loss = K.mean(-y_true * K.log(y_pred), axis=axis)
     weighted_loss = K.sum(loss*weights, axis=-1)
     return K.mean(weighted_loss)
 
