@@ -68,7 +68,7 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
                                           labels=labels,
-                                          skip_blank=skip_blank)
+                                          skip_blank=skip_blank, shuffle_index_list=False)
 
     # Set the number of training and testing samples per epoch correctly
     num_training_steps = get_number_of_steps(len(training_list), batch_size)

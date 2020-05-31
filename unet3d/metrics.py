@@ -6,7 +6,7 @@ import tensorflow.math as tfmth
 import numpy as np
 
 
-def dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=1.):
+def dice_coefficient(y_true, y_pred, axis=(-3, -2, -1), smooth=0.00001):
     y_true_f = K.cast(y_true, dtype='float32')
     y_pred_f = K.cast(y_pred, dtype='float32')
     intersection = K.sum(y_true_f * y_pred_f, axis=axis)
