@@ -11,7 +11,7 @@
     "batch_size": 1,
     "validation_batch_size": 2,
     "n_epochs": 500,
-    "patience": 5,
+    "patience": 10,
     "early_stop": 50,
     "optimizer": {
         "name": "Adam",

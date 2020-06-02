@@ -3,6 +3,7 @@ from functools import partial
 from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate, Softmax, Multiply
 from keras.engine import Model
 from .unet import create_convolution_block, concatenate
+from keras.regularizers import l2
 
 
 create_convolution_block = partial(create_convolution_block, activation=LeakyReLU, instance_normalization=True)
@@ -82,16 +83,31 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
     model = Model(inputs=inputs, outputs=activation_block)
     return model
 
+
+def create_conv3D(output_channels, kernel_size, use_bias=False):
+    regularizer = l2(1e-5)
+    conv3d = Conv3D(output_channels, kernel_size, kernel_regularizer=regularizer, 
+                bias_regularizer=regularizer, use_bias=use_bias)
+    return conv3d
+
+
+def create_instance_norm(axis=1):
+    regularizer = l2(1e-5)
+    from keras_contrib.layers.normalization.instancenormalization import InstanceNormalization
+    ins_norm = InstanceNormalization(axis=1, beta_regularizer=regularizer, gamma_regularizer=regularizer)
+    return ins_norm
+
+
 def create_attention_gate(x, gating, inter_channels):
-    w_x = Conv3D(inter_channels, (1, 1, 1))(x)
-    w_gating = Conv3D(inter_channels, (1, 1, 1))(gating)
+    w_x = create_instance_norm(axis=1)(create_conv3D(inter_channels, (1, 1, 1)) (x))
+    w_gating = create_instance_norm(axis=1)(create_conv3D(inter_channels, (1, 1, 1), use_bias=True)(gating))
     up_w_gating = UpSampling3D(size=(2, 2, 2))(w_gating)
     sum_x_gating = Add()([w_x, up_w_gating])
     relu_sum = Activation('relu')(sum_x_gating)
-    psi = Conv3D(1, (1, 1, 1))(relu_sum)
+    psi = create_instance_norm(axis=1)(create_conv3D(1, (1, 1, 1), use_bias=True)(relu_sum))
     mask = Activation('sigmoid')(psi)
-    output_attention = Multiply()([x, mask])
-    return output_attention
+    masked_x = Multiply()([x, mask])
+    return masked_x
 
 
 def create_localization_module(input_layer, n_filters):
