@@ -48,7 +48,7 @@ class CSVLoggerTimeEpoch(CSVLogger):
         if not self.writer:
             class CustomDialect(csv.excel):
                 delimiter = self.sep
-            fieldnames = ['epoch', 'time_for_epoch'] + self.keys
+            fieldnames = ['epoch', 'time_for_epoch', 'lr'] + self.keys
             if six.PY2:
                 fieldnames = [unicode(x) for x in fieldnames]
             self.writer = csv.DictWriter(self.csv_file,
