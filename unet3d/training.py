@@ -60,12 +60,10 @@ class CSVLoggerTimeEpoch(CSVLogger):
         row_dict = OrderedDict({'epoch': epoch})
         delta_time = time.time() - self.epoch_time_start
         row_dict.update({'time_for_epoch': delta_time})
+        row_dict.update({'lr': K.eval(self.model.optimizer.lr)})
         row_dict.update((key, handle_value(logs[key])) for key in self.keys)
         self.writer.writerow(row_dict)
         self.csv_file.flush()
-
-
-
 
 
 # learning rate schedule
