@@ -9,7 +9,6 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import directed_hausdorff
 
-
 def get_whole_tumor_mask(data):
     return data > 0
 
@@ -22,21 +21,59 @@ def get_enhancing_tumor_mask(data):
     return data == 4
 
 
+def get_edema_mask(data):
+    return data == 2
+
+
+def get_necrotic_mask(data):
+    return data == 1
+
+
+def get_non_tumor_mask(data):
+    return data == 0
+    
+
+header_masking_dict = {
+    'over_class': {
+        'headers': ('None Tumor', 'Necrotic', 'Edema', 'Enhancing Tumor'),
+        'masking_funcs': (get_non_tumor_mask, get_necrotic_mask, get_edema_mask, get_enhancing_tumor_mask)
+        },
+    'brats_sub_region': {
+        'headers': ('Whole Tumor', 'Tumor Core', 'Enhancing Tumor'),
+        'masking_funcs': (get_whole_tumor_mask, get_tumor_core_mask, get_enhancing_tumor_mask)
+        }
+}
+
+
 def dice_coefficient(truth, prediction):
     return 2 * np.sum(truth * prediction)/(np.sum(truth) + np.sum(prediction))
 
-# TPR
-
+# Recall positive
 def get_Sensitivity(truth, prediction):
   tp = np.sum(truth*prediction)
   return tp / (np.sum(truth))
 
-# TNR
+# Recall negative
 def get_Specificity(truth, prediction):
   n_truth = truth == 0
   n_prediction = prediction == 0
   tn = np.sum(n_truth * n_prediction)
   return tn / np.sum(n_truth)
+
+
+# Precision positive
+def get_Precision_positive(truth, prediction):
+    tp = np.sum(truth*prediction)
+    return tp / (np.sum(prediction))
+
+
+# Precision negative
+def get_Precision_negative(truth, prediction):
+    n_truth = truth == 0
+    n_prediction = prediction == 0
+    tn = np.sum(n_truth * n_prediction)
+    return tn / np.sum(n_prediction)
+
 
 # Hausdorff distance
 def get_Hd_distance(truth, prediction):
@@ -49,10 +86,13 @@ def get_Hd_distance(truth, prediction):
   hd_ab = max(d_ab, d_ba)
   return hd_ab
 
+
 metrics_dict = {
     'dice_score': dice_coefficient,
     'sensitivity': get_Sensitivity,
     'specificity': get_Specificity,
+    'precision_positive': get_Precision_positive,
+    'precision_negative': get_Precision_negative,
     'hd_distance': get_Hd_distance
 }
 
@@ -60,6 +100,8 @@ y_labels_dict = {
     'dice_score': 'Dice Score',
     'sensitivity': 'Sensitivity',
     'specificity': 'Specificity',
+    'precision_positive': 'Precision positive',
+    'precision_negative': 'Precision negative',
     'hd_distance': 'Hausdorff Distance'
 }
 
@@ -99,13 +141,13 @@ def get_file_path_for_evaluation(mode, output_path, label_path):
     
     return list_outputs, list_labels
 
-def main(metric_names, prediction_path, label_path, output_folder, mode):
+def main(metric_names, prediction_path, label_path, output_folder, mode, region_eval='brats_sub_region'):
     
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    header = ("Whole Tumor", "Tumor Core", "Enhancing Tumor")
-    masking_functions = (get_whole_tumor_mask, get_tumor_core_mask, get_enhancing_tumor_mask)
+    headers = header_masking_dict[region_eval]['headers']
+    masking_functions = header_masking_dict[region_eval]['masking_funcs']
     rows = [list() for i in range(len(metric_names))]
     subject_ids = list()
     list_outputs, list_labels = get_file_path_for_evaluation(mode, prediction_path, label_path)
@@ -127,8 +169,8 @@ def main(metric_names, prediction_path, label_path, output_folder, mode):
             metric_val = [metrics_dict[x](func(truth), func(prediction)) for func in masking_functions]
             rows[i].append(metric_val)
 
-    export_csv_files(rows, header, metric_names, subject_ids, output_folder)
-    export_boxplot(rows, header, metric_names, output_folder)
+    export_csv_files(rows, headers, metric_names, subject_ids, output_folder)
+    export_boxplot(rows, headers, metric_names, output_folder)
 
 
 def export_csv_files(data, header, metric_names, subject_ids, output_folder):
