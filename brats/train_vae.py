@@ -37,10 +37,10 @@ def main(config=None):
                                 model_cfg['num_filters_dec'], model_cfg['size_vector_latent'])
 
     # Prepare trainer
+    trainer_cfg = config['trainer']
     if os.path.exists(model_cfg['model_file']):
         model = load_old_model(config)
     else:
-        trainer_cfg = config['trainer']
         optimizer = getattr(opts, config['optimizer']['name'])(**config['optimizer'].get('args'))
         loss = loss_VAE(model_cfg['input_shape'], z_mean, z_var, trainer_cfg['weight_L2'], trainer_cfg['weight_KL'])
         metrics = [getattr(module_metric, x) for x in trainer_cfg["metrics"]]

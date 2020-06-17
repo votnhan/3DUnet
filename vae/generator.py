@@ -1,6 +1,6 @@
 import numpy as np
 from keras.utils import Sequence
-from utils import pickle_load
+from unet3d.utils.utils import pickle_load
 from math import ceil
 from random import shuffle
 from copy import deepcopy

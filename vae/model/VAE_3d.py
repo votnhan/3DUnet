@@ -67,18 +67,18 @@ def green_block(inp, filters, data_format='channels_first', name=None):
         data_format=data_format,
         name=f'Conv3D_1_{name}' if name else None)(x)
 
-    x = GroupNormalization(
-        groups=8,
-        axis=1 if data_format == 'channels_first' else 0,
-        name=f'GroupNorm_2_{name}' if name else None)(x)
-    x = Activation('relu', name=f'Relu_2_{name}' if name else None)(x)
-    x = Conv3D(
-        filters=filters,
-        kernel_size=(3, 3, 3),
-        strides=1,
-        padding='same',
-        data_format=data_format,
-        name=f'Conv3D_2_{name}' if name else None)(x)
+    # x = GroupNormalization(
+    #     groups=8,
+    #     axis=1 if data_format == 'channels_first' else 0,
+    #     name=f'GroupNorm_2_{name}' if name else None)(x)
+    # x = Activation('relu', name=f'Relu_2_{name}' if name else None)(x)
+    # x = Conv3D(
+    #     filters=filters,
+    #     kernel_size=(3, 3, 3),
+    #     strides=1,
+    #     padding='same',
+    #     data_format=data_format,
+    #     name=f'Conv3D_2_{name}' if name else None)(x)
 
     out = Add(name=f'Out_{name}' if name else None)([x, inp_res])
     return out
@@ -169,7 +169,7 @@ Returns
         name='Enc_DownSample_32')(x1)
 
     ## Green Block x2 (output filters = 64)
-    x = green_block(x, num_filters_enc[1], name='Enc_64_1')
+    # x = green_block(x, num_filters_enc[1], name='Enc_64_1')
     x2 = green_block(x, num_filters_enc[1], name='x2')
     x = Conv3D(
         filters=num_filters_enc[1],
@@ -180,7 +180,7 @@ Returns
         name='Enc_DownSample_64')(x2)
 
     ## Green Blocks x2 (output filters = 128)
-    x = green_block(x, num_filters_enc[2], name='Enc_128_1')
+    # x = green_block(x, num_filters_enc[2], name='Enc_128_1')
     x3 = green_block(x, num_filters_enc[2], name='x3')
     x = Conv3D(
         filters=num_filters_enc[2],
@@ -191,9 +191,9 @@ Returns
         name='Enc_DownSample_128')(x3)
 
     ## Green Blocks x4 (output filters = 256)
-    x = green_block(x, num_filters_enc[3], name='Enc_256_1')
-    x = green_block(x, num_filters_enc[3], name='Enc_256_2')
-    x = green_block(x, num_filters_enc[3], name='Enc_256_3')
+    # x = green_block(x, num_filters_enc[3], name='Enc_256_1')
+    # x = green_block(x, num_filters_enc[3], name='Enc_256_2')
+    # x = green_block(x, num_filters_enc[3], name='Enc_256_3')
     x4 = green_block(x, num_filters_enc[3], name='x4')
 
     # -------------------------------------------------------------------------
@@ -219,7 +219,7 @@ Returns
     x = Dense(size_vector_latent, name='Dec_VAE_VD_Dense')(x)
 
     ### VDraw Block (Sampling)
-    # z_mean and z_var has index of 83, 84 in model's layers
+
     z_mean = Dense(size_vector_latent//2, name='Dec_VAE_VDraw_Mean')(x)
     z_var = Dense(size_vector_latent//2, name='Dec_VAE_VDraw_Var')(x)
     x = Lambda(sampling, name='Dec_VAE_VDraw_Sampling')([z_mean, z_var])

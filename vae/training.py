@@ -5,6 +5,7 @@ from keras.models import load_model
 from unet3d.training import get_callbacks, train_model
 from keras.utils.io_utils import h5dict
 import vae.metrics as module_metric
+from vae.model import create_3d_VAE_model
 import keras.optimizers as opts
 import json
 import warnings
@@ -20,9 +21,10 @@ def load_old_model(config, re_compile=False):
     custom_objects = dict()
     from vae.model import GroupNormalization
     custom_objects['GroupNormalization'] = GroupNormalization
-    model = load_model(model_cfg['model_file'], custom_objects=custom_objects, compile=False)
-    idx_mean, idx_var = model_cfg['idxs_mean_var']
-    z_mean, z_var = model.layers[idx_mean], model.layers[idx_var]
+    model, z_mean, z_var = create_3d_VAE_model(model_cfg['input_shape'], model_cfg['num_filters_enc'], 
+                                model_cfg['num_filters_dec'], model_cfg['size_vector_latent'])
+    
+    model.load_weights(model_cfg['model_file'])
     # Prepare loss
     loss = module_metric.loss_VAE(model_cfg['input_shape'], z_mean, z_var, 
                                     trainer_cfg['weight_L2'], trainer_cfg['weight_KL'])
