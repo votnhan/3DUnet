@@ -1,0 +1,36 @@
+{
+    "model":{
+        "input_shape": [4, 128, 128, 128],
+        "num_filters_enc": [32, 64, 128, 256],
+        "num_filters_dec": [256, 128, 64, 32],
+        "size_vector_latent": 256,
+        "idxs_mean_var": [83, 84],
+        "model_file": "vae_model.h5"
+    },
+    "generator":{
+        "train_batch_size": 1,
+        "val_batch_size": 2,
+        "noise_h5_file": "brats_data_isensee_2018_idp_norm_noise.h5",
+        "clean_h5_file": "brats_data_isensee_2018_idp_norm.h5",
+        "train_ids": "isensee_training_ids_idp_norm.pkl",
+        "val_ids": "isensee_validation_ids_idp_norm.pkl",
+        "shuffe_train": true
+    },
+    "optimizer":{
+        "name": "Adam",
+        "args":{
+            "lr": 1e-4
+        }
+    },
+    "trainer":{
+        "weight_L2": 1.0,
+        "weight_KL": 1.0,
+        "metrics": [],
+        "loss_fc": "loss_VAE",
+        "learning_rate_drop": 0.5,
+        "patience": 5,
+        "early_stop": 50,
+        "n_epochs": 500,
+        "model_best":"checkpoints/model_best.h5"
+    }
+}
