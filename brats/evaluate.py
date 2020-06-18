@@ -9,6 +9,8 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import directed_hausdorff
 
+epsilon = 1e-5
+
 def get_whole_tumor_mask(data):
     return data > 0
 
@@ -31,10 +33,10 @@ def get_necrotic_mask(data):
 
 def get_non_tumor_mask(data):
     return data == 0
-    
+
 
 header_masking_dict = {
-    'over_class': {
+    'over_classes': {
         'headers': ('None Tumor', 'Necrotic', 'Edema', 'Enhancing Tumor'),
         'masking_funcs': (get_non_tumor_mask, get_necrotic_mask, get_edema_mask, get_enhancing_tumor_mask)
         },
@@ -51,20 +53,20 @@ def dice_coefficient(truth, prediction):
 # Recall positive
 def get_Sensitivity(truth, prediction):
   tp = np.sum(truth*prediction)
-  return tp / (np.sum(truth))
+  return (tp + epsilon) / (np.sum(truth) + epsilon)
 
 # Recall negative
 def get_Specificity(truth, prediction):
   n_truth = truth == 0
   n_prediction = prediction == 0
   tn = np.sum(n_truth * n_prediction)
-  return tn / np.sum(n_truth)
-
+  return (tn + epsilon) / (np.sum(n_truth) + epsilon)
+  
 
 # Precision positive
 def get_Precision_positive(truth, prediction):
     tp = np.sum(truth*prediction)
-    return tp / (np.sum(prediction))
+    return (tp + epsilon) / (np.sum(prediction) + epsilon)
 
 
 # Precision negative
@@ -72,7 +74,7 @@ def get_Precision_negative(truth, prediction):
     n_truth = truth == 0
     n_prediction = prediction == 0
     tn = np.sum(n_truth * n_prediction)
-    return tn / np.sum(n_prediction)
+    return (tn + epsilon) / (np.sum(n_prediction) + epsilon)
 
 
 # Hausdorff distance
@@ -217,10 +219,11 @@ parser.add_argument('--output_folder', type=str, default='output')
 parser.add_argument('--prediction_folder', type=str, default='prediction')
 parser.add_argument('--label_folder', type=str, default='prediction')
 parser.add_argument('--mode', type=str, default='model_mode', help='model_mode or original_mode')
+parser.add_argument('--region_eval', type=str, default='brats_sub_region', help='brats_sub_region or over_classes')
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args.metrics_name, args.prediction_folder, args.label_folder, 
-    args.output_folder, args.mode)
+    args.output_folder, args.mode, args.region_eval)
     #visualize_training_process('./training.log')
