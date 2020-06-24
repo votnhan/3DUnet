@@ -1,6 +1,8 @@
 from functools import partial
 
-from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, SpatialDropout3D, Conv3D, Concatenate, Softmax, Multiply
+from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, \
+                            SpatialDropout3D, Conv3D, Concatenate, \
+                            Softmax, Multiply
 from keras.engine import Model
 from .unet import create_convolution_block, concatenate
 from keras.regularizers import l2
@@ -10,7 +12,7 @@ create_convolution_block = partial(create_convolution_block, activation=LeakyReL
 
 
 def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5, dropout_rate=0.3,
-                      n_segmentation_levels=3, n_labels=4, activation_name="sigmoid"):
+                      n_segmentation_levels=3, n_labels=4, activation_name="sigmoid", visualize=False):
     """
     This function builds a model proposed by Isensee et al. for the BRATS 2017 competition:
     https://www.cbica.upenn.edu/sbia/Spyridon.Bakas/MICCAI_BraTS/MICCAI_BraTS_2017_proceedings_shortPapers.pdf
@@ -31,6 +33,13 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
     :param activation_name:
     :return:
     """
+    if visualize:
+        before_masked = list()
+        gatting_signal = list()
+        masks = list()
+        after_masked = list()
+        normed_after_masked = list()
+
     inputs = Input(input_shape)
 
     current_layer = inputs
@@ -53,8 +62,24 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
         current_layer = summation_layer
 
     segmentation_layers = list()
+    gatting = create_gatting_signal(current_layer, level_filters[-2])
+    
+    if visualize:
+        before_masked = level_output_layers.copy().reverse()
+        gatting_signal.append(gatting)
+
     for level_number in range(depth - 2, -1, -1):
-        masked_current_layer = create_attention_gate(level_output_layers[level_number], current_layer, level_filters[level_number])
+        if level_number > 0:
+            up_size = 3 * (2 ** (depth - 1 - level_number), )
+            masked_current_layer, mask, masked_x = create_attention_gate(level_output_layers[level_number], gatting, 
+                                                            level_filters[level_number], up_size)
+            if visualize:
+                normed_after_masked.append(masked_current_layer)
+                masks.append(mask)
+                after_masked.append(masked_x)
+
+        else:
+            masked_current_layer = level_output_layers[level_number]
         up_sampling = create_up_sampling_module(current_layer, level_filters[level_number])
         concatenation_layer = concatenate([masked_current_layer, up_sampling], axis=1)
         localization_output = create_localization_module(concatenation_layer, level_filters[level_number])
@@ -80,7 +105,14 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
     elif activation_name == 'softmax':
         activation_block = Softmax(axis=1)(output_layer)
 
-    model = Model(inputs=inputs, outputs=activation_block)
+    
+    if visualize:
+        outputs = before_masked + gatting_signal + masks + after_masked + normed_after_masked
+        outputs.append(activation_block)
+    else:
+        outputs = activation_block
+        
+    model = Model(inputs=inputs, outputs=outputs)
     return model
 
 
@@ -95,16 +127,27 @@ def create_instance_norm(axis=1):
     return ins_norm
 
 
-def create_attention_gate(x, gating, inter_channels):
-    w_x = create_conv3D(inter_channels, (1, 1, 1), strides=(2, 2, 2)) (x)
+def create_attention_gate(x, gating, inter_channels, up_size=(2, 2, 2), masks_list=None):
+    w_x = create_conv3D(inter_channels, (1, 1, 1), strides=(1, 1, 1)) (x)
     w_gating = create_conv3D(inter_channels, (1, 1, 1), use_bias=True)(gating)
-    sum_x_gating = Add()([w_x, w_gating])
+    up_gatting = UpSampling3D(size=up_size)(w_gating)
+    sum_x_gating = Add()([w_x, up_gatting])
     relu_sum = Activation('relu')(sum_x_gating)
     psi = create_conv3D(1, (1, 1, 1), use_bias=True)(relu_sum)
     mask = Activation('sigmoid')(psi)
-    up_mask = UpSampling3D(size=(2, 2, 2))(mask)
-    masked_x = Multiply()([x, up_mask])
-    return masked_x
+    masked_x = Multiply()([x, mask])
+    W = create_instance_norm(axis=1)(create_conv3D(x.shape[1], (1, 1, 1))(masked_x))
+    return Activation('relu')(W), mask, masked_x
+
+
+def create_gatting_signal(center, out_size, is_norm=True):
+    x = create_conv3D(out_size, (1, 1, 1))(center)
+    
+    if is_norm:
+        x = create_instance_norm(axis=1)(x)
+    
+    relu_x = Activation('relu')(x)
+    return relu_x
 
 
 def create_localization_module(input_layer, n_filters):

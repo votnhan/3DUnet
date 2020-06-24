@@ -43,5 +43,31 @@
     "keys_tuple": ["image_shape", "labels"],
     "loss_fc": "weighted_dice_coefficient_loss",
     "metrics": ["dice_whole_tumor", "dice_tumor_core", "dice_enhancing_tumor"],
-    "normalization_type": "independent"
+    "normalization_type": "independent",
+    "visualization":{
+        "before_masked": {
+            "filenames": ["encoder_lv4.npz", "encoder_lv3.npz", "encoder_lv2.npz", 
+                "encoder_lv1.npz"],
+            "range": [0, 4]
+        },
+        "gatting_signal": {
+            "filenames": ["gattting_lv4.npz"],
+            "range": [4, 5]
+
+        },
+        "masks": {
+            "filenames": ["mask_lv4.npz", "mask_lv3.npz", "mask_lv2.npz"],
+            "range": [5, 8]
+        },
+        "after_masked": {
+            "filenames": ["filtered_lv4.npz", "filtered_lv3.npz", "filtered_lv2.npz"],
+            "range": [8, 11]
+
+        },
+        "normed_after_masked": {
+            "filenames": ["normed_filtered_lv4.npz", "normed_filtered_lv3.npz", 
+                    "normed_filtered_lv2.npz"],
+            "range": [11, 14]
+        }
+    }
 }
