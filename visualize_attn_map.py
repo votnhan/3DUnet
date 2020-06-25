@@ -53,6 +53,9 @@ def prepare_model(config):
 
 
 def save_npz_tensors(list_tensor, list_filenames, output_path):
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    
     for i, tensor in enumerate(list_tensor):
         output_file = os.path.join(output_path, list_filenames[i])
         np.savez_compressed(output_file, tensor)
@@ -63,10 +66,10 @@ def get_intermidiate_feature(config, subject_fd, output_path):
     model = prepare_model(config)
     outputs = model.predict(subject_tensor)
     # Hard code temporary
-    list_filenames = config['visualization']['filenames']
+    list_filenames = config['visualization']
     for k, v in list_filenames.items():
         filenames = v['filenames']
-        range_idx = slice(v['range_idx'])
+        range_idx = slice(v['range'][0], v['range'][1])
         list_tensors = outputs[range_idx]
         save_npz_tensors(list_tensors, filenames, output_path)
     
@@ -84,5 +87,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.config_file, 'r') as cfg:
         config = json.load(cfg)
-
+    
+    config["input_shape"] = tuple([config["nb_channels"]] + list(config["inference_shape"]))
     get_intermidiate_feature(config, args.subject_fd, args.output_path)

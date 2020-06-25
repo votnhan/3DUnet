@@ -48,26 +48,26 @@
         "before_masked": {
             "filenames": ["encoder_lv4.npz", "encoder_lv3.npz", "encoder_lv2.npz", 
                 "encoder_lv1.npz"],
-            "range": [0, 4]
+            "range": [1, 5]
         },
         "gatting_signal": {
-            "filenames": ["gattting_lv4.npz"],
-            "range": [4, 5]
+            "filenames": ["gatting_lv4.npz"],
+            "range": [5, 6]
 
         },
         "masks": {
             "filenames": ["mask_lv4.npz", "mask_lv3.npz", "mask_lv2.npz"],
-            "range": [5, 8]
+            "range": [6, 9]
         },
         "after_masked": {
             "filenames": ["filtered_lv4.npz", "filtered_lv3.npz", "filtered_lv2.npz"],
-            "range": [8, 11]
+            "range": [9, 12]
 
         },
         "normed_after_masked": {
             "filenames": ["normed_filtered_lv4.npz", "normed_filtered_lv3.npz", 
                     "normed_filtered_lv2.npz"],
-            "range": [11, 14]
+            "range": [12, 15]
         }
     }
 }

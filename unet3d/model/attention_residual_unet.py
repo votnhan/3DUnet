@@ -65,7 +65,8 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
     gatting = create_gatting_signal(current_layer, level_filters[-2])
     
     if visualize:
-        before_masked = level_output_layers.copy().reverse()
+        before_masked = level_output_layers[:-1].copy()
+        before_masked.reverse()
         gatting_signal.append(gatting)
 
     for level_number in range(depth - 2, -1, -1):
