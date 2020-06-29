@@ -160,9 +160,10 @@ def main(metric_names, prediction_path, label_path, output_folder, mode, region_
         
         subject_id = output_path.split('/')[-2]
         subject_ids.append(subject_id)
-        truth_image = nib.load(output_path)
+
+        truth_image = nib.load(label_path)
         truth = truth_image.get_data()
-        prediction_image = nib.load(label_path)
+        prediction_image = nib.load(output_path)
         prediction = prediction_image.get_data()
         for i, x in enumerate(metric_names):
             if x not in metrics_dict:

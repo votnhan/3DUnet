@@ -108,8 +108,8 @@ def attention_isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=1
 
     
     if visualize:
-        outputs = before_masked + gatting_signal + masks + after_masked + normed_after_masked
-        outputs.append(activation_block)
+        outputs = [activation_block]
+        outputs += before_masked + gatting_signal + masks + after_masked + normed_after_masked
     else:
         outputs = activation_block
         
