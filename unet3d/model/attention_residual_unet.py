@@ -165,8 +165,7 @@ def create_up_sampling_module(input_layer, n_filters, size=(2, 2, 2)):
 
 def create_context_module(input_layer, n_level_filters, dropout_rate=0.3, data_format="channels_first"):
     convolution1 = create_convolution_block(input_layer=input_layer, n_filters=n_level_filters)
-    dropout = SpatialDropout3D(rate=dropout_rate, data_format=data_format)(convolution1)
-    convolution2 = create_convolution_block(input_layer=dropout, n_filters=n_level_filters)
+    convolution2 = create_convolution_block(input_layer=convolution1, n_filters=n_level_filters)
     return convolution2
 
 
